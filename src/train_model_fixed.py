@@ -3,9 +3,9 @@ Train model with proper saving (FIXED VERSION)
 """
 import os
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.applications import MobileNetV2
+import keras
+from keras import layers
+from keras.applications import MobileNetV2
 import matplotlib.pyplot as plt
 import json
 from datetime import datetime
