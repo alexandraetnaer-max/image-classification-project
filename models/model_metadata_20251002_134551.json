@@ -1,0 +1,32 @@
+{
+    "class_indices": {
+        "Casual Shoes": 0,
+        "Handbags": 1,
+        "Heels": 2,
+        "Kurtas": 3,
+        "Shirts": 4,
+        "Sports Shoes": 5,
+        "Sunglasses": 6,
+        "Tops": 7,
+        "Tshirts": 8,
+        "Watches": 9
+    },
+    "index_to_class": {
+        "0": "Casual Shoes",
+        "1": "Handbags",
+        "2": "Heels",
+        "3": "Kurtas",
+        "4": "Shirts",
+        "5": "Sports Shoes",
+        "6": "Sunglasses",
+        "7": "Tops",
+        "8": "Tshirts",
+        "9": "Watches"
+    },
+    "num_classes": 10,
+    "image_size": [
+        224,
+        224
+    ],
+    "timestamp": "20251002_134551"
+}

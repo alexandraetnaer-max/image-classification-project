@@ -1,0 +1,44 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Data files (too large for GitHub)
+data/raw/
+data/processed/
+
+# Model files (too large)
+*.h5
+*.keras
+*.weights.h5
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Results (can regenerate)
+results/*.png
+results/*.jpg
+
+# Temporary files
+*.tmp
+.ipynb_checkpoints/
