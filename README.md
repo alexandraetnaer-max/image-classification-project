@@ -1,6 +1,46 @@
 # Fashion Product Image Classification
+## 🐳 Quick Start with Docker (Recommended)
 
+If you have Docker installed, this is the easiest way:
+```bash
+# Clone repository
+git clone https://github.com/alexandraetnaer-max/image-classification-project.git
+cd image-classification-project
+
+# Build Docker image
+docker-compose build
+
+# Start container
+docker-compose run ml-training bash
+
+# Inside container:
+python src/prepare_data.py
+python src/train_model_fixed.py
 Machine Learning project for classifying fashion products using Transfer Learning (MobileNetV2).
+See DOCKER_INSTRUCTIONS.md for detailed instructions.
+4. **Результат должен выглядеть так:**
+```markdown
+# Fashion Product Image Classification
+
+## 🐳 Quick Start with Docker (Recommended)
+
+If you have Docker installed, this is the easiest way:
+```bash
+# Clone repository
+git clone https://github.com/alexandraetnaer-max/image-classification-project.git
+cd image-classification-project
+
+# Build Docker image
+docker-compose build
+
+# Start container
+docker-compose run ml-training bash
+
+# Inside container:
+python src/prepare_data.py
+python src/train_model_fixed.py
+See DOCKER_INSTRUCTIONS.md for detailed instructions.
+
 
 ## 📋 Project Overview
 
