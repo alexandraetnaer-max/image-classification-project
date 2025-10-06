@@ -1,0 +1,25 @@
+{
+  "timestamp": "20251006_201044",
+  "num_classes": 10,
+  "classes": [
+    "Casual Shoes",
+    "Handbags",
+    "Heels",
+    "Kurtas",
+    "Shirts",
+    "Sports Shoes",
+    "Sunglasses",
+    "Tops",
+    "Tshirts",
+    "Watches"
+  ],
+  "epochs_trained": 10,
+  "final_train_accuracy": 0.9294810891151428,
+  "final_val_accuracy": 0.917801022529602,
+  "image_size": [
+    224,
+    224
+  ],
+  "keras_model_path": "models/fashion_model_20251006_201044.keras",
+  "weights_path": "models/fashion_weights_20251006_201044.weights.h5"
+}
