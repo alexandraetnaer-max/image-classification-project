@@ -65,7 +65,26 @@ def preprocess_image(image_bytes):
     img_array = np.expand_dims(img_array, axis=0)
     
     return img_array
-
+@app.route('/', methods=['GET'])
+def home():
+    """Welcome page with API information"""
+    return jsonify({
+        'service': 'Fashion Classification API',
+        'version': '1.0',
+        'status': 'running',
+        'model': {
+            'loaded': model is not None,
+            'classes': len(class_names) if class_names else 0
+        },
+        'endpoints': {
+            'health': '/health',
+            'classes': '/classes',
+            'predict': '/predict (POST)',
+            'predict_batch': '/predict_batch (POST)'
+        },
+        'documentation': 'https://github.com/alexandraetnaer-max/image-classification-project',
+        'cloud_deployment': 'Google Cloud Run - europe-west1'
+    })
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
