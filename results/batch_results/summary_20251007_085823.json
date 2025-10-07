@@ -1,0 +1,11 @@
+{
+  "timestamp": "20251007_085823",
+  "total_processed": 3,
+  "successful": 3,
+  "failed": 0,
+  "categories": {
+    "Casual Shoes": 1,
+    "Shirts": 1,
+    "Kurtas": 1
+  }
+}
