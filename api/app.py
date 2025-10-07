@@ -16,8 +16,9 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Configuration
-MODEL_DIR = os.path.join('..', 'models')
-RESULTS_DIR = os.path.join('..', 'results')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_DIR = os.path.join(BASE_DIR, 'models')
+RESULTS_DIR = os.path.join(BASE_DIR, 'results')
 
 # Global variables
 model = None
@@ -208,8 +209,8 @@ def get_classes():
         'total': len(class_names)
     })
 
+# Load model on startup (important for gunicorn)
+load_model_and_classes()
+
 if __name__ == '__main__':
-    print("Loading model...")
-    load_model_and_classes()
-    print("Starting Flask API...")
     app.run(host='0.0.0.0', port=5000, debug=True)

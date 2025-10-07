@@ -1,28 +1,23 @@
-# Use official Python runtime
-FROM python:3.13-slim
+FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (for better caching)
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY api/ ./api/
+COPY models/ ./models/
+COPY src/ ./src/
 
-# Copy project files
-COPY . .
+RUN mkdir -p data/incoming data/processed_batches results logs
 
-# Create necessary directories
-RUN mkdir -p data/raw data/processed models results logs
-
-# Set environment variable to disable oneDNN warnings
 ENV TF_ENABLE_ONEDNN_OPTS=0
+ENV PORT=8080
 
-# Default command
-CMD ["bash"]
+EXPOSE 8080
+
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 api.app:app
