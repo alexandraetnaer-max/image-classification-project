@@ -20,11 +20,16 @@ def run_all_tests():
     loader = unittest.TestLoader()
     suite = loader.discover('tests', pattern='test_*.py')
     
+    # Count tests
+    test_count = suite.countTestCases()
+    print(f"Discovered {test_count} tests")
+    print()
+    
     # Run with verbose output
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     
-    # Print summary
+    # Print detailed summary
     print()
     print("=" * 70)
     print("TEST SUMMARY")
@@ -34,6 +39,25 @@ def run_all_tests():
     print(f"Failures: {len(result.failures)}")
     print(f"Errors: {len(result.errors)}")
     print(f"Skipped: {len(result.skipped)}")
+    
+    # Calculate success rate
+    if result.testsRun > 0:
+        success_rate = ((result.testsRun - len(result.failures) - len(result.errors)) 
+                       / result.testsRun * 100)
+        print(f"Success Rate: {success_rate:.1f}%")
+    
+    # List failed tests
+    if result.failures:
+        print()
+        print("FAILED TESTS:")
+        for test, traceback in result.failures:
+            print(f"  ✗ {test}")
+    
+    if result.errors:
+        print()
+        print("ERRORS:")
+        for test, traceback in result.errors:
+            print(f"  ✗ {test}")
     
     if result.wasSuccessful():
         print()
