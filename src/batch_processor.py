@@ -10,6 +10,12 @@ from datetime import datetime
 from pathlib import Path
 import json
 import time
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from monitoring.alerting import AlertManager, AlertScenarios
+from monitoring.execution_history import ExecutionHistoryDB
 
 # Configuration
 INCOMING_DIR = os.path.join('data', 'incoming')
@@ -56,7 +62,7 @@ class BatchProcessor:
     
     def get_incoming_images(self):
         """Get list of images to process"""
-        image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.gif',  '.webp', '.tiff', '.tif')
+        image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.tiff', '.tif')
         images = []
         
         if not os.path.exists(INCOMING_DIR):
@@ -73,6 +79,16 @@ class BatchProcessor:
         """Process single image through API"""
         filepath = os.path.join(INCOMING_DIR, filename)
         
+        # Convert webp to jpg if needed
+        if filename.lower().endswith('.webp'):
+            from PIL import Image
+            img = Image.open(filepath)
+            jpg_filename = filename.rsplit('.', 1)[0] + '.jpg'
+            jpg_filepath = os.path.join(INCOMING_DIR, jpg_filename)
+            img.convert('RGB').save(jpg_filepath, 'JPEG')
+            filepath = jpg_filepath
+            filename = jpg_filename
+            
         try:
             # Send to API
             with open(filepath, 'rb') as f:
@@ -135,7 +151,7 @@ class BatchProcessor:
         """Save processing results to CSV"""
         if not self.results:
             self.log("No results to save")
-            return
+            return {}
         
         # Create DataFrame
         df = pd.DataFrame(self.results)
@@ -213,17 +229,44 @@ class BatchProcessor:
         self.log("\n" + "=" * 60)
         self.log("BATCH PROCESSING COMPLETE")
         self.log("=" * 60)
-        self.log(f"Total processed: {summary['total_processed']}")
-        self.log(f"Successful: {summary['successful']}")
-        self.log(f"Failed: {summary['failed']}")
+        self.log(f"Total processed: {summary.get('total_processed', 0)}")
+        self.log(f"Successful: {summary.get('successful', 0)}")
+        self.log(f"Failed: {summary.get('failed', 0)}")
         
-        if summary['categories']:
+        if summary.get('categories'):
             self.log("\nCategory distribution:")
             for category, count in summary['categories'].items():
-                if category:  # Skip None values
+                if category:
                     self.log(f"  - {category}: {count}")
         
         self.log(f"\nLog file: {self.log_file}")
+        
+        # Log execution and send alerts
+        try:
+            db = ExecutionHistoryDB()
+            db.log_batch_run({
+                'timestamp': datetime.now().isoformat(),
+                'total_images': len(self.results),
+                'successful': len([r for r in self.results if r['status'] == 'success']),
+                'failed': len([r for r in self.results if r['status'] != 'success']),
+                'success_rate': (len([r for r in self.results if r['status'] == 'success']) / len(self.results) * 100) if self.results else 0,
+                'duration_seconds': 0,
+                'status': 'success' if all(r['status'] == 'success' for r in self.results) else 'partial',
+                'error_message': None
+            })
+            
+            # Send alerts if needed
+            alerts = AlertManager()
+            scenarios = AlertScenarios(alerts)
+            
+            # Alert on high failure rate
+            if self.results:
+                failure_rate = len([r for r in self.results if r['status'] != 'success']) / len(self.results) * 100
+                if failure_rate > 10:
+                    scenarios.high_error_rate(failure_rate)
+            
+        except Exception as e:
+            self.log(f"Warning: Could not log to monitoring system: {e}")
 
 if __name__ == "__main__":
     processor = BatchProcessor()
