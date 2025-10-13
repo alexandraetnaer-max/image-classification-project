@@ -1,4 +1,13 @@
 # Fashion Product Image Classification
+# Fashion Product Image Classification
+
+## System Architecture
+
+![Architecture Diagram](docs/architecture_diagram.png)
+
+For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
+---
 ## 🐳 Quick Start with Docker (Recommended)
 
 If you have Docker installed, this is the easiest way:
