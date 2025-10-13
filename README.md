@@ -103,6 +103,35 @@ image-classification-project/
 ├── run_tests.py                  # Test runner
 └── README.md                     # This file
 
+---
+
+## 💼 Usage Examples & Business Scenarios
+
+For detailed examples and real-world scenarios, see **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)**
+
+**Includes:**
+- Step-by-step API integration examples (Python, JavaScript)
+- Batch processing workflows
+- E-commerce integration scenarios
+- **Complete Returns Department workflow** (daily operations guide)
+- Quality control procedures
+- Inventory management integration
+
+**Quick Example - Classify Product:**
+```python
+import requests
+
+# Classify single product
+with open('product.jpg', 'rb') as f:
+    response = requests.post(
+        'https://fashion-classifier-api-728466800559.europe-west1.run.app/predict',
+        files={'file': f}
+    )
+    result = response.json()
+    print(f"Category: {result['category']} ({result['confidence']:.0%})")
+
+
+
 🎯 Features
 Core ML Pipeline
 
