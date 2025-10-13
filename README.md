@@ -313,9 +313,20 @@ Commit changes (git commit -m 'Add amazing feature')
 Push to branch (git push origin feature/amazing-feature)
 Open Pull Request
 
+## 📝 License
 
-📝 License
-This project is for educational purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### Dataset License
+
+The Fashion Product Images dataset is used under **CC0: Public Domain** license.  
+See [DATASETS.md](DATASETS.md) for full dataset documentation and attribution.
+
+### Model License
+
+- **MobileNetV2 (base):** Apache 2.0 License (Google)
+- **Trained weights:** Apache 2.0 License (derived work)
+
 
 👤 Author
 Alexandra Etnaer
