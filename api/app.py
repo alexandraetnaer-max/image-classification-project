@@ -12,8 +12,98 @@ import io
 import json
 import base64
 from datetime import datetime
+import logging
+from logging.handlers import RotatingFileHandler
+import traceback
+from functools import wraps
+import time
 
 app = Flask(__name__)
+# Configure logging
+def setup_logging():
+    """Configure application logging"""
+    log_dir = os.path.join('..', 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # Create formatters
+    detailed_formatter = logging.Formatter(
+        '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+    )
+    
+    # File handler for all logs
+    file_handler = RotatingFileHandler(
+        os.path.join(log_dir, 'api.log'),
+        maxBytes=10485760,  # 10MB
+        backupCount=10
+    )
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(detailed_formatter)
+    
+    # File handler for errors only
+    error_handler = RotatingFileHandler(
+        os.path.join(log_dir, 'api_errors.log'),
+        maxBytes=10485760,  # 10MB
+        backupCount=10
+    )
+    error_handler.setLevel(logging.ERROR)
+    error_handler.setFormatter(detailed_formatter)
+    
+    # Configure app logger
+    app.logger.addHandler(file_handler)
+    app.logger.addHandler(error_handler)
+    app.logger.setLevel(logging.INFO)
+    
+    app.logger.info("=" * 60)
+    app.logger.info("Fashion Classification API Started")
+    app.logger.info("=" * 60)
+
+# Initialize logging
+setup_logging()
+
+# Request logging decorator
+def log_request(f):
+    """Decorator to log API requests"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        start_time = time.time()
+        
+        # Log request
+        app.logger.info(f"REQUEST: {request.method} {request.path} from {request.remote_addr}")
+        
+        try:
+            response = f(*args, **kwargs)
+            
+            # Log response time
+            duration = time.time() - start_time
+            app.logger.info(f"RESPONSE: {request.path} completed in {duration:.2f}s")
+            
+            return response
+        except Exception as e:
+            # Log error
+            duration = time.time() - start_time
+            app.logger.error(f"ERROR in {request.path}: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            raise
+    
+    return decorated_function
+
+# Statistics tracker
+request_stats = {
+    'total_requests': 0,
+    'successful_predictions': 0,
+    'failed_predictions': 0,
+    'total_images_processed': 0,
+    'start_time': datetime.now()
+}
+
+def update_stats(success=True, num_images=1):
+    """Update request statistics"""
+    request_stats['total_requests'] += 1
+    request_stats['total_images_processed'] += num_images
+    if success:
+        request_stats['successful_predictions'] += num_images
+    else:
+        request_stats['failed_predictions'] += num_images
 
 # Configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -66,6 +156,7 @@ def preprocess_image(image_bytes):
     
     return img_array
 @app.route('/', methods=['GET'])
+@log_request 
 def home():
     """Welcome page with API information"""
     return jsonify({
@@ -86,6 +177,7 @@ def home():
         'cloud_deployment': 'Google Cloud Run - europe-west1'
     })
 @app.route('/health', methods=['GET'])
+@log_request 
 def health():
     """Health check endpoint"""
     return jsonify({
@@ -96,6 +188,7 @@ def health():
     })
 
 @app.route('/predict', methods=['POST'])
+@log_request 
 def predict():
     """
     Predict category for a single image
@@ -131,6 +224,7 @@ def predict():
         predictions = model.predict(img_array, verbose=0)
         predicted_class_idx = np.argmax(predictions[0])
         confidence = float(predictions[0][predicted_class_idx])
+        predicted_class = class_names[predicted_class_idx]
         
         # Get all probabilities
         all_probs = {
@@ -141,17 +235,27 @@ def predict():
         # Sort by confidence
         sorted_probs = dict(sorted(all_probs.items(), key=lambda x: x[1], reverse=True))
         
-        return jsonify({
-            'category': class_names[predicted_class_idx],
+        result = {
+            'category': predicted_class,
             'confidence': confidence,
             'all_probabilities': sorted_probs,
             'timestamp': datetime.now().isoformat()
-        })
+        }
+        
+        # Update statistics
+        update_stats(success=True, num_images=1)
+        app.logger.info(f"Predicted: {predicted_class} with confidence {confidence:.4f}")
+        
+        return jsonify(result)
     
     except Exception as e:
+        # Update statistics for failure
+        update_stats(success=False, num_images=1)
+        app.logger.error(f"Prediction error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/predict_batch', methods=['POST'])
+@log_request 
 def predict_batch():
     """
     Predict categories for multiple images
@@ -221,12 +325,36 @@ def predict_batch():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/classes', methods=['GET'])
+@log_request 
 def get_classes():
     """Get list of available classes"""
     return jsonify({
         'classes': class_names,
         'total': len(class_names)
     })
+@app.route('/stats', methods=['GET'])
+@log_request
+def get_stats():
+    """Get API statistics"""
+    uptime = datetime.now() - request_stats['start_time']
+    
+    stats = {
+        'uptime_seconds': int(uptime.total_seconds()),
+        'uptime_human': str(uptime).split('.')[0],
+        'total_requests': request_stats['total_requests'],
+        'total_images_processed': request_stats['total_images_processed'],
+        'successful_predictions': request_stats['successful_predictions'],
+        'failed_predictions': request_stats['failed_predictions'],
+        'success_rate': (
+            request_stats['successful_predictions'] / request_stats['total_images_processed'] * 100
+            if request_stats['total_images_processed'] > 0 else 0
+        ),
+        'model_loaded': model is not None,
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    app.logger.info(f"Stats requested: {stats}")
+    return jsonify(stats)
 
 # Load model on startup (important for gunicorn)
 load_model_and_classes()

@@ -1,0 +1,9 @@
+Fashion Classifier - Monitoring Report
+Generated: 2025-10-13 10:25:12
+
+API Health: unknown
+Batch Health: warning
+
+Statistics:
+  Total processed: 5
+  Success rate: 100.0%
