@@ -3,13 +3,9 @@ version: '3.8'
 services:
   ml-training:
     build: .
-    container_name: fashion-classifier
+    container_name: fashion-classifier-training
     volumes:
-      - ./data:/app/data
-      - ./models:/app/models
-      - ./results:/app/results
-      - ./logs:/app/logs
+      - .:/app
     environment:
-      - TF_ENABLE_ONEDNN_OPTS=0
-    stdin_open: true
-    tty: true
+      - PYTHONUNBUFFERED=1
+    command: bash

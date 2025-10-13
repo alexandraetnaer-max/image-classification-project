@@ -1,0 +1,94 @@
+name: Nightly Batch Processing
+
+on:
+  schedule:
+    # Runs at 02:00 UTC every day
+    - cron: '0 2 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'API URL (optional override)'
+        required: false
+        default: 'https://fashion-classifier-api-728466800559.europe-west1.run.app'
+
+jobs:
+  batch-process:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create necessary directories
+      run: |
+        mkdir -p data/incoming
+        mkdir -p data/processed_batches
+        mkdir -p results/batch_results
+        mkdir -p logs
+    
+    - name: Download test images (for demo)
+      run: |
+        # In production, you would download from cloud storage
+        # For now, create placeholder
+        echo "Ready for batch processing"
+        # Example: aws s3 sync s3://your-bucket/incoming data/incoming/
+    
+    - name: Run batch processor
+      env:
+        API_URL: ${{ github.event.inputs.api_url || 'https://fashion-classifier-api-728466800559.europe-west1.run.app' }}
+      run: |
+        python src/batch_processor.py
+      continue-on-error: true
+    
+    - name: Upload batch results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: batch-results-${{ github.run_number }}
+        path: |
+          results/batch_results/
+          logs/
+        retention-days: 30
+    
+    - name: Generate summary
+      if: always()
+      run: |
+        echo "## Batch Processing Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Count results
+        if [ -d "results/batch_results" ]; then
+          RESULT_COUNT=$(find results/batch_results -name "*.csv" | wc -l)
+          echo "- Results files generated: $RESULT_COUNT" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Show latest log
+        if [ -d "logs" ]; then
+          LATEST_LOG=$(ls -t logs/*.log 2>/dev/null | head -1)
+          if [ -n "$LATEST_LOG" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Latest Log Preview" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -20 "$LATEST_LOG" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+    
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Batch processing failed! Check the logs for details."
+        # Add notification logic here (Slack, email, etc.)

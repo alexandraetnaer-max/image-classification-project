@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  batch-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fashion-batch-scheduler
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./logs:/app/logs
+    environment:
+      - API_URL=https://fashion-classifier-api-728466800559.europe-west1.run.app
+      - TZ=Europe/Berlin
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "
+      echo 'Batch Scheduler Started'
+      while true; do
+        echo '========================================='
+        echo 'Running batch processing at' \$$(date)
+        echo '========================================='
+        python src/batch_processor.py
+        
+        if [ \$$? -eq 0 ]; then
+          echo 'Batch processing completed successfully'
+        else
+          echo 'Batch processing failed!'
+        fi
+        
+        echo 'Next run in 24 hours...'
+        sleep 86400
+      done
+      "
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
