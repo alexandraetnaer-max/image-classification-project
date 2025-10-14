@@ -1,4 +1,3 @@
-```markdown
 # Docker Instructions
 
 Complete guide for running the Fashion Classification System using Docker.
@@ -18,11 +17,15 @@ docker --version
 
 docker-compose --version
 # Should show: Docker Compose version 2.20.0 or higher
+```
 
-Quick Start
-Option 1: Docker Compose (Recommended)
-Start All Services:
-bash# Clone repository
+## Quick Start
+
+### Option 1: Docker Compose (Recommended)
+
+**Start All Services:**
+```bash
+# Clone repository
 git clone https://github.com/alexandraetnaer-max/image-classification-project.git
 cd image-classification-project
 
@@ -30,19 +33,34 @@ cd image-classification-project
 docker-compose up
 
 # Access API at: http://localhost:5000
-Stop Services:
-bashdocker-compose down
-Option 2: Docker Only
-Build Image:
-bashdocker build -t fashion-classifier .
-Run Container:
-bashdocker run -p 5000:5000 fashion-classifier
+```
+
+**Stop Services:**
+```bash
+docker-compose down
+```
+
+### Option 2: Docker Only
+
+**Build Image:**
+```bash
+docker build -t fashion-classifier .
+```
+
+**Run Container:**
+```bash
+docker run -p 5000:5000 fashion-classifier
 
 # Access API at: http://localhost:5000
+```
 
-Docker Compose Configuration
-File: docker-compose.yml
-yamlversion: '3.8'
+---
+
+## Docker Compose Configuration
+
+**File:** `docker-compose.yml`
+```yaml
+version: '3.8'
 
 services:
   api:
@@ -57,14 +75,17 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
     restart: unless-stopped
-Services:
+```
+**Services:**
+- `api` – Flask API service
 
-api - Flask API service
+---
 
+## Dockerfile
 
-Dockerfile
-Location: Root directory
-dockerfileFROM python:3.10-slim
+**Location:** Root directory
+```dockerfile
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -82,59 +103,93 @@ EXPOSE 5000
 
 # Run application
 CMD ["python", "api/app.py"]
+```
 
-Running Training with Docker
-Start Training Container:
-bashdocker-compose run ml-training bash
+---
+
+## Running Training with Docker
+
+**Start Training Container:**
+```bash
+docker-compose run ml-training bash
 
 # Inside container:
 python src/prepare_data.py
 python src/train_model_fixed.py
+```
 
-Volume Mapping
-Persistent Data:
-yamlvolumes:
+---
+
+## Volume Mapping
+
+**Persistent Data:**
+```yaml
+volumes:
   - ./models:/app/models      # Model files
   - ./data:/app/data          # Training data
   - ./logs:/app/logs          # Log files
   - ./results:/app/results    # Results
-Benefits:
+```
 
-Data persists after container stops
-Easy access from host machine
-Share data between containers
+**Benefits:**
+- Data persists after container stops  
+- Easy access from host machine  
+- Share data between containers  
 
+---
 
-Environment Variables
-Set in docker-compose.yml:
-yamlenvironment:
+## Environment Variables
+
+**Set in docker-compose.yml:**
+```yaml
+environment:
   - PORT=5000
   - MODEL_PATH=/app/models/fashion_classifier.keras
   - LOG_LEVEL=INFO
-Or in .env file:
-bashPORT=5000
+```
+
+**Or in .env file:**
+```bash
+PORT=5000
 MODEL_PATH=/app/models/fashion_classifier.keras
 LOG_LEVEL=INFO
+```
 
-Useful Commands
-View Logs:
-bash# Real-time logs
+---
+
+## Useful Commands
+
+**View Logs:**
+```bash
+# Real-time logs
 docker-compose logs -f
 
 # Last 100 lines
 docker-compose logs --tail=100
-Enter Container:
-bash# Interactive shell
+```
+
+**Enter Container:**
+```bash
+# Interactive shell
 docker-compose exec api bash
 
 # Run command
 docker-compose exec api python src/simple_test.py
-Restart Services:
-bashdocker-compose restart
-Rebuild After Code Changes:
-bashdocker-compose up --build
-Clean Up:
-bash# Stop and remove containers
+```
+
+**Restart Services:**
+```bash
+docker-compose restart
+```
+
+**Rebuild After Code Changes:**
+```bash
+docker-compose up --build
+```
+
+**Clean Up:**
+```bash
+# Stop and remove containers
 docker-compose down
 
 # Remove images
@@ -142,48 +197,84 @@ docker-compose down --rmi all
 
 # Remove volumes (WARNING: deletes data)
 docker-compose down -v
+```
 
-Testing with Docker
-Run Tests:
-bashdocker-compose exec api python run_tests.py
-Run Specific Test:
-bashdocker-compose exec api python -m pytest tests/test_api.py -v
+---
 
-Production Deployment
-Build Production Image:
-bashdocker build -t fashion-classifier:prod -f Dockerfile.prod .
-Run with Gunicorn:
-bashdocker run -p 8080:8080 \
-  -e PORT=8080 \
-  fashion-classifier:prod
+## Testing with Docker
 
-Troubleshooting
-Issue: Port Already in Use
-bash# Solution: Change port
+**Run Tests:**
+```bash
+docker-compose exec api python run_tests.py
+```
+
+**Run Specific Test:**
+```bash
+docker-compose exec api python -m pytest tests/test_api.py -v
+```
+
+---
+
+## Production Deployment
+
+**Build Production Image:**
+```bash
+docker build -t fashion-classifier:prod -f Dockerfile.prod .
+```
+
+**Run with Gunicorn:**
+```bash
+docker run -p 8080:8080   -e PORT=8080   fashion-classifier:prod
+```
+
+---
+
+## Troubleshooting
+
+**Issue: Port Already in Use**
+```bash
+# Solution: Change port
 docker-compose up
 # Edit docker-compose.yml: ports: - "5001:5000"
-Issue: Permission Denied
-bash# Solution: Run as root or fix permissions
+```
+
+**Issue: Permission Denied**
+```bash
+# Solution: Run as root or fix permissions
 sudo docker-compose up
 # Or: chmod -R 777 data/ logs/
-Issue: Model Not Loading
-bash# Solution: Check volume mapping
+```
+
+**Issue: Model Not Loading**
+```bash
+# Solution: Check volume mapping
 docker-compose exec api ls -la /app/models/
 # Should show fashion_classifier.keras
-Issue: Out of Memory
-bash# Solution: Increase Docker memory
-# Docker Desktop → Settings → Resources → Memory: 4GB+
+```
 
-Docker Best Practices
-1. Use .dockerignore:
+**Issue: Out of Memory**
+```bash
+# Solution: Increase Docker memory
+# Docker Desktop → Settings → Resources → Memory: 4GB+
+```
+
+---
+
+## Docker Best Practices
+
+1. **Use .dockerignore:**
+```
 __pycache__/
 *.pyc
 .git/
 venv/
 data/raw/
 logs/*.log
-2. Multi-stage Builds:
-dockerfile# Build stage
+```
+
+2. **Multi-stage Builds:**
+```dockerfile
+# Build stage
 FROM python:3.10-slim as builder
 WORKDIR /app
 COPY requirements.txt .
@@ -195,15 +286,21 @@ COPY --from=builder /root/.local /root/.local
 COPY . /app
 WORKDIR /app
 CMD ["python", "api/app.py"]
-3. Health Checks:
-dockerfileHEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:5000/health || exit 1
+```
 
-Resources
+3. **Health Checks:**
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --retries=3   CMD curl -f http://localhost:5000/health || exit 1
+```
 
-Docker Docs: https://docs.docker.com/
-Docker Compose: https://docs.docker.com/compose/
-Best Practices: https://docs.docker.com/develop/dev-best-practices/
+---
 
+## Resources
 
-Last Updated: October 2025
+- **Docker Docs:** https://docs.docker.com/  
+- **Docker Compose:** https://docs.docker.com/compose/  
+- **Best Practices:** https://docs.docker.com/develop/dev-best-practices/  
+
+---
+
+**Last Updated:** October 2025
