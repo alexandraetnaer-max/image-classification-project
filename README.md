@@ -1,4 +1,4 @@
-markdown# Fashion Product Image Classification
+# Fashion Product Image Classification
 
 ## System Architecture
 
@@ -37,9 +37,12 @@ docker-compose run ml-training bash
 # Inside container:
 python src/prepare_data.py
 python src/train_model_fixed.py
+```
 See DOCKER_INSTRUCTIONS.md for details.
-Option 2: Manual Setup
-bash# 1. Clone repository
+
+### Option 2: Manual Setup
+```bash
+# 1. Clone repository
 git clone https://github.com/alexandraetnaer-max/image-classification-project.git
 cd image-classification-project
 
@@ -63,8 +66,13 @@ python src/train_model_fixed.py
 
 # 7. Test model
 python src/simple_test.py
+```
 
-📁 Project Structure
+---
+
+## 📁 Project Structure
+
+```
 image-classification-project/
 ├── api/                          # Flask REST API
 │   ├── app.py                    # API application
@@ -89,7 +97,7 @@ image-classification-project/
 │   └── test_utils.py
 ├── monitoring/                   # Monitoring tools
 │   ├── dashboard.py              # Monitoring dashboard
-│   └── check_batch_health.py    # Health checker
+│   └── check_batch_health.py     # Health checker
 ├── results/                      # Results and reports
 │   ├── visualizations/           # Training charts
 │   ├── batch_results/            # Batch CSVs
@@ -102,6 +110,7 @@ image-classification-project/
 ├── docker-compose.yml            # Docker Compose
 ├── run_tests.py                  # Test runner
 └── README.md                     # This file
+```
 
 ---
 
@@ -129,54 +138,54 @@ with open('product.jpg', 'rb') as f:
     )
     result = response.json()
     print(f"Category: {result['category']} ({result['confidence']:.0%})")
+```
 
+---
 
+## 🎯 Features
 
-🎯 Features
-Core ML Pipeline
+**Core ML Pipeline**
+- ✅ Data preparation (70/15/15 split)
+- ✅ Transfer Learning (MobileNetV2)
+- ✅ Model training with validation
+- ✅ 91.78% accuracy achieved
 
-✅ Data preparation (70/15/15 split)
-✅ Transfer Learning (MobileNetV2)
-✅ Model training with validation
-✅ 91.78% accuracy achieved
+**REST API**
+- ✅ Flask-based RESTful API
+- ✅ Single image prediction
+- ✅ Batch predictions
+- ✅ Health checks
+- ✅ Statistics endpoint
+- ✅ Deployed on Google Cloud Run
 
-REST API
+**Batch Processing**
+- ✅ Automated image classification
+- ✅ Scheduled execution (Task Scheduler/Cron)
+- ✅ Result organization by category
+- ✅ CSV and JSON reports
+- ✅ Comprehensive logging
 
-✅ Flask-based RESTful API
-✅ Single image prediction
-✅ Batch predictions
-✅ Health checks
-✅ Statistics endpoint
-✅ Deployed on Google Cloud Run
+**Monitoring & Logging**
+- ✅ Real-time API statistics
+- ✅ Rotating file logs
+- ✅ Health monitoring
+- ✅ Performance dashboards
+- ✅ Error tracking
 
-Batch Processing
+**Visualization & Reporting**
+- ✅ Training metrics visualization
+- ✅ Confusion matrices
+- ✅ Per-class accuracy charts
+- ✅ Automated HTML reports
+- ✅ Batch processing analytics
 
-✅ Automated image classification
-✅ Scheduled execution (Task Scheduler/Cron)
-✅ Result organization by category
-✅ CSV and JSON reports
-✅ Comprehensive logging
+---
 
-Monitoring & Logging
+## 🧪 Testing
 
-✅ Real-time API statistics
-✅ Rotating file logs
-✅ Health monitoring
-✅ Performance dashboards
-✅ Error tracking
-
-Visualization & Reporting
-
-✅ Training metrics visualization
-✅ Confusion matrices
-✅ Per-class accuracy charts
-✅ Automated HTML reports
-✅ Batch processing analytics
-
-
-🧪 Testing
-Running Tests
-bash# Run all tests
+**Running Tests**
+```bash
+# Run all tests
 python run_tests.py
 
 # Run specific test module
@@ -186,26 +195,35 @@ python run_tests.py test_batch_processor
 
 # Run individual test
 python -m unittest tests.test_api.TestFlaskAPI.test_health_endpoint
-Test Coverage
+```
 
-Data Preparation: Directory structure, split ratios, validation
-API Endpoints: All routes, request/response formats, error handling
-Batch Processing: File detection, result validation, summary generation
-Utilities: Image formats, configuration, data validation
+**Test Coverage**
+- Data Preparation: Directory structure, split ratios, validation
+- API Endpoints: All routes, request/response formats, error handling
+- Batch Processing: File detection, result validation, summary generation
+- Utilities: Image formats, configuration, data validation
 
 See TESTING.md for detailed testing guide.
 
-🌐 API Usage
-Local Development
-bash# Start API
+---
+
+## 🌐 API Usage
+
+**Local Development**
+```bash
+# Start API
 cd api
 python app.py
 
 # API available at http://localhost:5000
-Cloud Deployment
+```
+
+**Cloud Deployment**
 Live API: https://fashion-classifier-api-728466800559.europe-west1.run.app
-Endpoints
-bash# Health check
+
+**Endpoints**
+```bash
+# Health check
 GET /health
 
 # Get categories
@@ -218,60 +236,90 @@ Body: file=@image.jpg
 
 # Statistics
 GET /stats
+```
 See api/README.md for complete API documentation.
 
-📊 Batch Processing
-Manual Execution
-bash# Make sure API is running
+---
+
+## 📊 Batch Processing
+
+**Manual Execution**
+```bash
+# Make sure API is running
 python api/app.py
 
 # In another terminal
 python src/batch_processor.py
-Automated Execution
-Windows: Task Scheduler with run_batch_processing.bat
-Linux/Mac: Cron with run_batch_processing.sh
-bash# Add to crontab for daily 2 AM execution
+```
+
+**Automated Execution**
+- Windows: Task Scheduler with run_batch_processing.bat
+- Linux/Mac: Cron with run_batch_processing.sh
+
+```bash
+# Add to crontab for daily 2 AM execution
 0 2 * * * /path/to/run_batch_processing.sh
+```
 See BATCH_SCHEDULING.md for automation guide.
 
-📈 Visualization & Reports
-Generate Training Visualizations
-bashpython src/visualize_results.py
+---
+
+## 📈 Visualization & Reports
+
+**Generate Training Visualizations**
+```bash
+python src/visualize_results.py
+```
 Output: results/visualizations/
 
-Training accuracy/loss curves
-Confusion matrix
-Class distribution
-Per-class accuracy
+- Training accuracy/loss curves
+- Confusion matrix
+- Class distribution
+- Per-class accuracy
 
-Generate Batch Report
-bash# Last 7 days
+**Generate Batch Report**
+```bash
+# Last 7 days
 python src/generate_batch_report.py
 
 # Last 30 days
 python src/generate_batch_report.py --days 30
+```
 Output: results/reports/ (HTML + charts)
 See VISUALIZATION.md for visualization guide.
 
-🔍 Monitoring
-Monitoring Dashboard
-bashpython monitoring/dashboard.py
+---
+
+## 🔍 Monitoring
+
+**Monitoring Dashboard**
+```bash
+python monitoring/dashboard.py
+```
 Output: monitoring/reports/
 
-System health report
-Processing statistics
-Visual charts
-Error analysis
+- System health report
+- Processing statistics
+- Visual charts
+- Error analysis
 
-Health Check
-bashpython monitoring/check_batch_health.py
+**Health Check**
+```bash
+python monitoring/check_batch_health.py
+```
 See MONITORING.md for monitoring guide.
 
-☁️ Cloud Deployment
+---
+
+## ☁️ Cloud Deployment
+
 The API is deployed on Google Cloud Run and publicly accessible.
+
 URL: https://fashion-classifier-api-728466800559.europe-west1.run.app
-Deploy Your Own
-bash# Install Google Cloud SDK
+
+**Deploy Your Own**
+```bash
+# Install Google Cloud SDK
 gcloud init
 
 # Deploy
@@ -282,65 +330,84 @@ gcloud run deploy fashion-classifier-api \
   --allow-unauthenticated \
   --memory 2Gi \
   --timeout 300
+```
 See CLOUD_DEPLOYMENT.md for deployment guide.
 
-📚 Documentation
+---
 
-ARCHITECTURE.md: System architecture and components
-DOCKER_INSTRUCTIONS.md: Docker setup guide
-BATCH_SCHEDULING.md: Batch automation guide
-CLOUD_DEPLOYMENT.md: Cloud deployment guide
-MONITORING.md: Monitoring and logging guide
-VISUALIZATION.md: Visualization and reporting guide
-TESTING.md: Testing guide
-api/README.md: API documentation
+## 📚 Documentation
 
+- ARCHITECTURE.md: System architecture and components
+- DOCKER_INSTRUCTIONS.md: Docker setup guide
+- BATCH_SCHEDULING.md: Batch automation guide
+- CLOUD_DEPLOYMENT.md: Cloud deployment guide
+- MONITORING.md: Monitoring and logging guide
+- VISUALIZATION.md: Visualization and reporting guide
+- TESTING.md: Testing guide
+- api/README.md: API documentation
 
-🔧 Troubleshooting
-Memory Error During Training
-python# Edit src/train_model_fixed.py
+---
+
+## 🔧 Troubleshooting
+
+**Memory Error During Training**
+```python
+# Edit src/train_model_fixed.py
 BATCH_SIZE = 8  # Reduce from 16 to 8 or 4
-Import Errors
-bashpip install --upgrade -r requirements.txt
-API Connection Issues
-bash# Check if API is running
+```
+
+**Import Errors**
+```bash
+pip install --upgrade -r requirements.txt
+```
+
+**API Connection Issues**
+```bash
+# Check if API is running
 curl http://localhost:5000/health
 
 # For cloud API
 curl https://fashion-classifier-api-728466800559.europe-west1.run.app/health
-Batch Processing Not Running
-bash# Check logs
+```
+
+**Batch Processing Not Running**
+```bash
+# Check logs
 cat logs/batch_*.log
 
 # Verify API availability
 python monitoring/check_batch_health.py
+```
 
-📊 Results
-Model Performance
+---
 
-Training Accuracy: 92.95%
-Validation Accuracy: 91.78%
-Test Accuracy: 90.31%
+## 📊 Results
 
-Training Time
+**Model Performance**
+- Training Accuracy: 92.95%
+- Validation Accuracy: 91.78%
+- Test Accuracy: 90.31%
 
-~30-40 minutes on CPU
-~10-15 minutes on GPU (Kaggle Notebooks)
+**Training Time**
+- ~30-40 minutes on CPU
+- ~10-15 minutes on GPU (Kaggle Notebooks)
 
-API Performance
+**API Performance**
+- Average Response Time: 2-3 seconds
+- Success Rate: >95%
+- Uptime: 99.9% (Cloud Run)
 
-Average Response Time: 2-3 seconds
-Success Rate: >95%
-Uptime: 99.9% (Cloud Run)
+---
 
+## 🤝 Contributing
 
-🤝 Contributing
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-Fork the repository
-Create feature branch (git checkout -b feature/amazing-feature)
-Commit changes (git commit -m 'Add amazing feature')
-Push to branch (git push origin feature/amazing-feature)
-Open Pull Request
+---
 
 ## 📝 License
 
@@ -356,24 +423,28 @@ See [DATASETS.md](DATASETS.md) for full dataset documentation and attribution.
 - **MobileNetV2 (base):** Apache 2.0 License (Google)
 - **Trained weights:** Apache 2.0 License (derived work)
 
+---
 
-👤 Author
+## 👤 Author
+
 Alexandra Etnaer
 
-GitHub: @alexandraetnaer-max
+GitHub: @alexandraetnaer-max  
 Project: image-classification-project
 
+---
 
-🙏 Acknowledgments
+## 🙏 Acknowledgments
 
-Dataset: Fashion Product Images (Small) on Kaggle
-Model: MobileNetV2 (TensorFlow/Keras)
-Cloud: Google Cloud Run
-Framework: Flask, TensorFlow, Pandas, Matplotlib
+- Dataset: Fashion Product Images (Small) on Kaggle
+- Model: MobileNetV2 (TensorFlow/Keras)
+- Cloud: Google Cloud Run
+- Framework: Flask, TensorFlow, Pandas, Matplotlib
 
+---
 
-📞 Support
+## 📞 Support
 
-Issues: GitHub Issues
-Documentation: See docs above
-API Status: https://fashion-classifier-api-728466800559.europe-west1.run.app/health
+- Issues: GitHub Issues
+- Documentation: See docs above
+- API Status: https://fashion-classifier-api-728466800559.europe-west1.run.app/health
