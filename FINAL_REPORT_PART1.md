@@ -52,22 +52,23 @@ This project implements a production-ready machine learning system for automatic
 13. [References](#13-references)
 
 ---
+
 ## 1. Model Integration into Service
 
 ### 1.1 Model Architecture
 
 The system uses **MobileNetV2** as the base architecture with transfer learning:
-Input (224x224x3 RGB image)
-↓
-MobileNetV2 Base (pre-trained on ImageNet)
-↓ (frozen weights)
-Global Average Pooling
-↓
-Dropout (0.2)
-↓
-Dense Layer (10 units, softmax)
-↓
-Output (10 fashion categories)
+- Input (224x224x3 RGB image)
+- ↓
+- MobileNetV2 Base (pre-trained on ImageNet)
+- ↓ (frozen weights)
+- Global Average Pooling
+- ↓
+- Dropout (0.2)
+- ↓
+- Dense Layer (10 units, softmax)
+- ↓
+- Output (10 fashion categories)
 
 **Model Specifications:**
 - **Base Model:** MobileNetV2 (1.4M parameters, pre-trained on ImageNet)
@@ -109,31 +110,30 @@ def predict():
 ```
 
 **Step 3: Cloud Deployment**
-
-Containerized with Docker
-Deployed to Google Cloud Run
-Auto-scaling based on traffic
-Global CDN distribution
+- Containerized with Docker
+- Deployed to Google Cloud Run
+- Auto-scaling based on traffic
+- Global CDN distribution
 
 ### 1.3 Transfer Learning Approach
 
 **Why Transfer Learning?**
 
-Limited Data: 25,465 images vs millions needed for training from scratch
-Faster Training: 20 epochs (~30 minutes) vs days/weeks
-Better Generalization: Pre-trained on 14M ImageNet images
-Resource Efficient: Can train on CPU/single GPU
+- Limited Data: 25,465 images vs millions needed for training from scratch
+- Faster Training: 20 epochs (~30 minutes) vs days/weeks
+- Better Generalization: Pre-trained on 14M ImageNet images
+- Resource Efficient: Can train on CPU/single GPU
 
 **Fine-tuning Strategy:**
 
-Froze all MobileNetV2 layers (feature extraction)
-Only trained final classification head
-Used categorical cross-entropy loss
-Adam optimizer with learning rate 0.001
+- Froze all MobileNetV2 layers (feature extraction)
+- Only trained final classification head
+- Used categorical cross-entropy loss
+- Adam optimizer with learning rate 0.001
 
 ### 1.4 Preprocessing Pipeline
-```bash
-pythondef preprocess_image(image_path):
+```python
+def preprocess_image(image_path):
     # Load image
     img = Image.open(image_path)
     
@@ -153,20 +153,28 @@ pythondef preprocess_image(image_path):
     return img_array
 ```
 
-**1.5 API Design**
+### 1.5 API Design
 
 RESTful Endpoints:
-EndpointMethodPurposeResponse Time/healthGETHealth check<100ms/predictPOSTSingle image2-3s/predict_batchPOSTMultiple images5-10s/classesGETList categories<100ms/statsGETAPI statistics<100ms/versionGETModel version<100ms
 
-Example Request:
+| Endpoint         | Method | Purpose               | Response Time |
+|------------------|--------|----------------------|--------------|
+| /health          | GET    | Health check         | <100ms       |
+| /predict         | POST   | Single image         | 2-3s         |
+| /predict_batch   | POST   | Multiple images      | 5-10s        |
+| /classes         | GET    | List categories      | <100ms       |
+| /stats           | GET    | API statistics       | <100ms       |
+| /version         | GET    | Model version        | <100ms       |
+
+**Example Request:**
 ```bash
-bashcurl -X POST -F "file=@product.jpg" \
+curl -X POST -F "file=@product.jpg" \
   https://fashion-classifier-api-728466800559.europe-west1.run.app/predict
 ```
 
-Example Response:
-```bash
-json{
+**Example Response:**
+```json
+{
   "category": "Tshirts",
   "confidence": 0.9534,
   "timestamp": "2025-10-13T15:30:00",
@@ -180,19 +188,29 @@ json{
 }
 ```
 
-**1.6 Integration Challenges and Solutions**
+### 1.6 Integration Challenges and Solutions
 
-ChallengeSolutionModel size (56MB initially)Used MobileNetV2 (14MB), quantizationSlow inference (5-7s)Batch processing, model optimizationMemory usage (4GB)Reduced to 2GB with efficient loadingCold start (30s)Keep-alive pings, pre-warmed instancesDifferent image formatsAuto-conversion to RGB, format handling
+| Challenge                 | Solution                                   |
+|---------------------------|--------------------------------------------|
+| Model size (56MB initially) | Used MobileNetV2 (14MB), quantization    |
+| Slow inference (5-7s)      | Batch processing, model optimization      |
+| Memory usage (4GB)         | Reduced to 2GB with efficient loading     |
+| Cold start (30s)           | Keep-alive pings, pre-warmed instances    |
+| Different image formats    | Auto-conversion to RGB, format handling   |
 
 **Reference:** See ARCHITECTURE.md for detailed integration architecture.
 
+---
+
 ## 2. Service Implementation Constraints
+
 ### 2.1 Technical Constraints
+
 #### 2.1.1 Memory Constraints
 
-Cloud Run Limit: 2GB RAM per container
-Model Memory: ~500MB (loaded model)
-Request Memory: ~50MB per image
+Cloud Run Limit: 2GB RAM per container  
+Model Memory: ~500MB (loaded model)  
+Request Memory: ~50MB per image  
 Max Concurrent: ~20 requests simultaneously
 
 **Mitigation:**
@@ -204,22 +222,21 @@ model.compile()  # Pre-compile for faster inference
 
 #### 2.1.2 Response Time Constraints
 
-Target: <3 seconds per prediction
-Actual: 2-3 seconds average
+Target: <3 seconds per prediction  
+Actual: 2-3 seconds average  
 Timeout: 30 seconds (Cloud Run limit)
 
 Breakdown:
-
-Image upload: 0.5s
-Preprocessing: 0.2s
-Model inference: 1.5s
-Response formatting: 0.1s
-Total: ~2.3s
+- Image upload: 0.5s
+- Preprocessing: 0.2s
+- Model inference: 1.5s
+- Response formatting: 0.1s
+- Total: ~2.3s
 
 #### 2.1.3 File Size Constraints
 
-Maximum: 10MB per image
-Recommended: <5MB
+Maximum: 10MB per image  
+Recommended: <5MB  
 Formats: JPG, PNG, BMP, GIF, WEBP, TIFF
 
 ```python
@@ -231,13 +248,13 @@ if file.content_length > MAX_FILE_SIZE:
 
 #### 2.1.4 Rate Limiting
 
-API Calls: 100 requests per hour per IP
-Batch Size: Maximum 50 images per batch
+API Calls: 100 requests per hour per IP  
+Batch Size: Maximum 50 images per batch  
 Concurrent: Maximum 10 concurrent requests per user
 
 **Implementation:**
-```bash
-pythonfrom flask_limiter import Limiter
+```python
+from flask_limiter import Limiter
 
 limiter = Limiter(app, key_func=get_remote_address)
 
@@ -248,93 +265,102 @@ def predict():
 ```
 
 ### 2.2 Infrastructure Constraints
+
 #### 2.2.1 Cloud Run Limitations
 
-Cold Start Time: 10-15 seconds
-Max Instances: 100 (auto-scaling limit)
-Request Timeout: 300 seconds maximum
-CPU: 1 vCPU per container
-Scaling: Automatic based on CPU/memory usage
+- Cold Start Time: 10-15 seconds
+- Max Instances: 100 (auto-scaling limit)
+- Request Timeout: 300 seconds maximum
+- CPU: 1 vCPU per container
+- Scaling: Automatic based on CPU/memory usage
 
 #### 2.2.2 Cost Constraints
 
-Free Tier: 2 million requests/month
-Beyond Free Tier: $0.00024 per request
-Current Usage: ~500 requests/day = $3.60/month
-Budget: $50/month maximum
+- Free Tier: 2 million requests/month
+- Beyond Free Tier: $0.00024 per request
+- Current Usage: ~500 requests/day = $3.60/month
+- Budget: $50/month maximum
 
 **Cost Optimization:**
-
-Use free tier efficiently
-Batch processing during off-peak hours
-Cache frequent predictions
-Minimize cold starts
+- Use free tier efficiently
+- Batch processing during off-peak hours
+- Cache frequent predictions
+- Minimize cold starts
 
 ### 2.3 Accuracy Constraints
+
 #### 2.3.1 Model Performance Limits
 
-Validation Accuracy: 91.78%
-Error Rate: 8.22%
-Low Confidence Threshold: 70%
-Manual Review Needed: ~15-20% of predictions
+- Validation Accuracy: 91.78%
+- Error Rate: 8.22%
+- Low Confidence Threshold: 70%
+- Manual Review Needed: ~15-20% of predictions
 
 **Per-Category Performance:**
-
-CategoryAccuracyCommon ErrorsTshirts95.2%Confused with TopsCasual Shoes92.8%Confused with Sports ShoesHandbags91.5%Various accessoriesWatches94.1%Clear featuresShirts89.3%Confused with Tshirts
+- Tshirts: 95.2% (Confused with Tops)
+- Casual Shoes: 92.8% (Confused with Sports Shoes)
+- Handbags: 91.5% (Various accessories)
+- Watches: 94.1% (Clear features)
+- Shirts: 89.3% (Confused with Tshirts)
 
 #### 2.3.2 Image Quality Requirements
 
-Good Quality (>90% confidence):
+**Good Quality (>90% confidence):**
+- ✅ Clean white/gray background
+- ✅ Good lighting (natural or studio)
+- ✅ Product centered and fully visible
+- ✅ High resolution (>800px)
+- ✅ Single product per image
 
-✅ Clean white/gray background
-✅ Good lighting (natural or studio)
-✅ Product centered and fully visible
-✅ High resolution (>800px)
-✅ Single product per image
-
-Poor Quality (<70% confidence):
-
-❌ Cluttered background
-❌ Poor lighting or shadows
-❌ Product partially visible
-❌ Low resolution (<300px)
-❌ Multiple products
+**Poor Quality (<70% confidence):**
+- ❌ Cluttered background
+- ❌ Poor lighting or shadows
+- ❌ Product partially visible
+- ❌ Low resolution (<300px)
+- ❌ Multiple products
 
 ### 2.4 Business Constraints
+
 #### 2.4.1 Operational Requirements
 
-Availability: 99% uptime target
-Response Time: <5 seconds (business requirement)
-Batch Processing: Overnight (2 AM - 6 AM)
-Manual Review: Human-in-the-loop for <70% confidence
+- Availability: 99% uptime target
+- Response Time: <5 seconds (business requirement)
+- Batch Processing: Overnight (2 AM - 6 AM)
+- Manual Review: Human-in-the-loop for <70% confidence
 
 #### 2.4.2 Compliance and Privacy
 
-GDPR: No personal data stored
-Data Retention: Processed images kept 30 days
-Audit Trail: All predictions logged
-Anonymization: No customer information in logs
+- GDPR: No personal data stored
+- Data Retention: Processed images kept 30 days
+- Audit Trail: All predictions logged
+- Anonymization: No customer information in logs
 
 ### 2.5 Scalability Constraints
+
 #### 2.5.1 Current Limits
 
-Daily Requests: ~500 API calls
-Batch Processing: ~200-300 images/night
-Storage: 100GB allocated (50GB used)
+- Daily Requests: ~500 API calls
+- Batch Processing: ~200-300 images/night
+- Storage: 100GB allocated (50GB used)
 
 #### 2.5.2 Growth Projections
 
-6 Months: 1,000 requests/day
-12 Months: 2,000 requests/day
-Strategy: Horizontal scaling with Cloud Run
+- 6 Months: 1,000 requests/day
+- 12 Months: 2,000 requests/day
+- Strategy: Horizontal scaling with Cloud Run
 
 **Reference:** See CLOUD_DEPLOYMENT.md for detailed constraints.
 
+---
+
 ## 3. Quality Assurance and Monitoring
+
 ### 3.1 Testing Strategy
+
 #### 3.1.1 Test Coverage
 
 **Total Tests:** 60 tests (100% pass rate)
+```
 tests/
 ├── test_api.py              # 10 API endpoint tests
 ├── test_batch_processor.py  # 8 batch processing tests
@@ -342,12 +368,12 @@ tests/
 ├── test_integration.py      # 15 end-to-end tests
 ├── test_edge_cases.py       # 18 edge case tests
 └── test_utils.py           # Helper test functions
+```
 
 **Test Distribution:**
-
-Unit Tests: 27 tests (45%)
-Integration Tests: 15 tests (25%)
-Edge Cases: 18 tests (30%)
+- Unit Tests: 27 tests (45%)
+- Integration Tests: 15 tests (25%)
+- Edge Cases: 18 tests (30%)
 
 #### 3.1.2 Unit Tests Example
 
@@ -370,6 +396,7 @@ def test_predict_endpoint_success(self):
 ```
 
 #### 3.1.3 Integration Tests
+
 ```python
 # tests/test_integration.py
 def test_end_to_end_workflow(self):
@@ -379,7 +406,9 @@ def test_end_to_end_workflow(self):
     # 3. Verify result
     # 4. Check logging
 ```
+
 #### 3.1.4 Edge Case Tests
+
 ```python
 # tests/test_edge_cases.py
 class TestImageEdgeCases:
@@ -392,12 +421,14 @@ class TestImageEdgeCases:
     def test_grayscale_image(self):
         """Test grayscale to RGB conversion"""
 ```
+
 ### 3.2 Monitoring System
+
 #### 3.2.1 Health Checks
 
 **API Health Endpoint:**
-```bash
-python@app.route('/health')
+```python
+@app.route('/health')
 def health():
     return jsonify({
         'status': 'healthy',
@@ -411,61 +442,65 @@ def health():
 ```bash
 # monitoring/check_api_health.py
 # Runs every 5 minutes via cron
-0,5,10,15,20,25,30,35,40,45,50,55 * * * * 
-python monitoring/check_api_health.py
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * python monitoring/check_api_health.py
 ```
 
 #### 3.2.2 Logging System
 
 **Log Levels:**
-
-INFO: Normal operations (predictions, batch runs)
-WARNING: Low confidence, potential issues
-ERROR: Failed predictions, API errors
-CRITICAL: System failures, model not loaded
+- INFO: Normal operations (predictions, batch runs)
+- WARNING: Low confidence, potential issues
+- ERROR: Failed predictions, API errors
+- CRITICAL: System failures, model not loaded
 
 **Log Files:**
-
+```
 logs/
 ├── api.log              # API request logs
 ├── batch_20251013.log   # Batch processing logs
 ├── alerts.log           # Alert history
 └── errors.log           # Error tracking
+```
 
 **Example Log Entry:**
-
+```
 [2025-10-13 14:30:15] INFO: Prediction request received
 [2025-10-13 14:30:17] INFO: Category: Tshirts, Confidence: 95.34%
 [2025-10-13 14:30:17] INFO: Response sent (2.1s)
+```
 
 #### 3.2.3 Alert Management
 
 **Alert Channels:**
-
-Email - Critical issues, daily summaries
-Slack - All alerts, real-time notifications
-Log Files - Complete audit trail
+- Email - Critical issues, daily summaries
+- Slack - All alerts, real-time notifications
+- Log Files - Complete audit trail
 
 **Alert Scenarios:**
-
-Alert TypeSeverityTriggerChannelAPI DownCRITICALHealth check fails 3xEmail + SlackHigh Error RateERROR>10% predictions failEmail + SlackLow ConfidenceWARNING>50 predictions <70%SlackBatch FailedERRORBatch processing errorEmail + SlackDisk Space LowWARNING<5GB availableEmailModel Not LoadedCRITICALModel load failureEmail + SlackSuccess SummaryINFOBatch completesSlack
+- API Down: CRITICAL, Health check fails 3x, Email + Slack
+- High Error Rate: ERROR, >10% predictions fail, Email + Slack
+- Low Confidence: WARNING, >50 predictions <70%, Slack
+- Batch Failed: ERROR, Batch processing error, Email + Slack
+- Disk Space Low: WARNING, <5GB available, Email
+- Model Not Loaded: CRITICAL, Model load failure, Email + Slack
+- Success Summary: INFO, Batch completes, Slack
 
 **Example Alert (Slack):**
-
 🔴 CRITICAL: Fashion Classifier Alert
 
 API Down
 
-Fashion Classification API is not responding. 
-Please check the service immediately.
+- Fashion Classification API is not responding. 
+- Please check the service immediately.
 
 Fashion Classification System
 Today at 2:05 AM
 
-#### 3.2.4 Execution History Database
-```bash
-#SQLite Database Schema:
-sql-- Batch runs tracking
+## 3.2.4 Execution History Database
+
+**SQLite Database Schema:**
+```sql
+-- Batch runs tracking
 CREATE TABLE batch_runs (
     id INTEGER PRIMARY KEY,
     timestamp TEXT,
@@ -478,7 +513,7 @@ CREATE TABLE batch_runs (
     error_message TEXT
 );
 
-# API calls tracking
+-- API calls tracking
 CREATE TABLE api_calls (
     id INTEGER PRIMARY KEY,
     timestamp TEXT,
@@ -488,7 +523,7 @@ CREATE TABLE api_calls (
     success BOOLEAN
 );
 
-#Alerts tracking
+-- Alerts tracking
 CREATE TABLE alerts (
     id INTEGER PRIMARY KEY,
     timestamp TEXT,
@@ -497,80 +532,113 @@ CREATE TABLE alerts (
     message TEXT,
     resolved BOOLEAN
 );
-#Query Example:
-python# Get last 7 days of batch runs
+```
+
+**Query Example:**
+```python
+# Get last 7 days of batch runs
 db = ExecutionHistoryDB()
 recent_runs = db.get_recent_batch_runs(days=7)
 ```
 
-#### 3.2.5 Dashboard
+---
 
-Real-time Monitoring Dashboard:
-bashpython monitoring/dashboard.py
+## 3.2.5 Dashboard
+
+**Real-time Monitoring Dashboard:**
+```bash
+python monitoring/dashboard.py
 # Opens at http://localhost:8050
+```
 
 **Dashboard Metrics:**
+- API health status
+- Request rate (requests/hour)
+- Average response time
+- Success rate (last 24 hours)
+- Recent predictions
+- Error distribution
+- Batch processing history
 
-API health status
-Request rate (requests/hour)
-Average response time
-Success rate (last 24 hours)
-Recent predictions
-Error distribution
-Batch processing history
+---
 
-3.3 Quality Metrics
-3.3.1 Model Performance Metrics
+## 3.3 Quality Metrics
+
+### 3.3.1 Model Performance Metrics
+
 Training Results:
+- Training Accuracy: 97.23%
+- Validation Accuracy: 91.78%
+- Test Accuracy: 90.85%
+- Loss: 0.3156
 
-Training Accuracy: 97.23%
-Validation Accuracy: 91.78%
-Test Accuracy: 90.85%
-Loss: 0.3156
+**Confusion Matrix Analysis:**
+- Best performing: Watches (94.1%)
+- Worst performing: Shirts (89.3%)
+- Common confusion: Tshirts ↔ Shirts
 
-Confusion Matrix Analysis:
+### 3.3.2 API Performance Metrics
 
-Best performing: Watches (94.1%)
-Worst performing: Shirts (89.3%)
-Common confusion: Tshirts ↔ Shirts
-
-3.3.2 API Performance Metrics
 Response Times (last 30 days):
-
-Average: 2.3 seconds
-Median: 2.1 seconds
-95th percentile: 3.5 seconds
-99th percentile: 5.2 seconds
+- Average: 2.3 seconds
+- Median: 2.1 seconds
+- 95th percentile: 3.5 seconds
+- 99th percentile: 5.2 seconds
 
 Success Rates:
+- Overall: 98.2%
+- 4xx Errors: 1.2% (client errors)
+- 5xx Errors: 0.6% (server errors)
 
-Overall: 98.2%
-4xx Errors: 1.2% (client errors)
-5xx Errors: 0.6% (server errors)
+### 3.3.3 Business Metrics
 
-3.3.3 Business Metrics
 Productivity Improvements:
-
-Manual Time Saved: 2-3 hours/day
-Cost Savings: $30-45/day
-Throughput: 200-300 items/day processed
-Accuracy: 92% automatic categorization
+- Manual Time Saved: 2-3 hours/day
+- Cost Savings: $30-45/day
+- Throughput: 200-300 items/day processed
+- Accuracy: 92% automatic categorization
 
 Reference: See MONITORING_EXAMPLES.md for detailed monitoring examples.
 
-4. Data Management
-4.1 Dataset Overview
-4.1.1 Source Dataset
-Name: Fashion Product Images (Small)
-Source: Kaggle
-URL: https://www.kaggle.com/datasets/paramaggarwal/fashion-product-images-small
-License: CC0: Public Domain
-Original Size: 44,446 images, ~2.3 GB
-4.1.2 Selected Categories
+---
+
+## 4. Data Management
+
+### 4.1 Dataset Overview
+
+#### 4.1.1 Source Dataset
+
+- Name: Fashion Product Images (Small)
+- Source: Kaggle
+- URL: https://www.kaggle.com/datasets/paramaggarwal/fashion-product-images-small
+- License: CC0: Public Domain
+- Original Size: 44,446 images, ~2.3 GB
+
+#### 4.1.2 Selected Categories
+
 Top 10 Categories (by image count):
-RankCategoryImagesPercentage1Tshirts7,06627.7%2Shirts3,21712.6%3Casual Shoes2,84611.2%4Watches2,54110.0%5Sports Shoes2,0358.0%6Kurtas1,8457.2%7Tops1,7616.9%8Handbags1,7596.9%9Heels1,3225.2%10Sunglasses1,0734.2%Total25,465100%
-4.2 Data Organization
-4.2.1 Directory Structure
+
+| Rank | Category      | Images | Percentage |
+|------|--------------|--------|------------|
+| 1    | Tshirts      | 7,066  | 27.7%      |
+| 2    | Shirts       | 3,217  | 12.6%      |
+| 3    | Casual Shoes | 2,846  | 11.2%      |
+| 4    | Watches      | 2,541  | 10.0%      |
+| 5    | Sports Shoes | 2,035  | 8.0%       |
+| 6    | Kurtas       | 1,845  | 7.2%       |
+| 7    | Tops         | 1,761  | 6.9%       |
+| 8    | Handbags     | 1,759  | 6.9%       |
+| 9    | Heels        | 1,322  | 5.2%       |
+| 10   | Sunglasses   | 1,073  | 4.2%       |
+|      | **Total**    | 25,465 | 100%       |
+
+---
+
+### 4.2 Data Organization
+
+#### 4.2.1 Directory Structure
+
+```
 data/
 ├── raw/                           # Original Kaggle dataset
 │   ├── images/                    # 44,446 product images
@@ -590,14 +658,18 @@ data/
     ├── Tshirts/
     ├── Shirts/
     └── ...
-4.2.2 Data Split Strategy
+```
+
+#### 4.2.2 Data Split Strategy
+
 Stratified Split (maintains class distribution):
 
-Training: 70% (17,825 images)
-Validation: 15% (3,820 images)
-Test: 15% (3,820 images)
+- Training: 70% (17,825 images)
+- Validation: 15% (3,820 images)
+- Test: 15% (3,820 images)
 
-python# src/prepare_data.py
+```python
+# src/prepare_data.py
 train_size = 0.70
 val_size = 0.15
 test_size = 0.15
@@ -607,20 +679,26 @@ for category in categories:
     images = get_images_for_category(category)
     train, temp = train_test_split(images, train_size=0.70, stratify=labels)
     val, test = train_test_split(temp, test_size=0.50, stratify=temp_labels)
-4.3 Data Processing Pipeline
-4.3.1 Preprocessing Steps
-Step 1: Data Preparation
-bashpython src/prepare_data.py
+```
+
+### 4.3 Data Processing Pipeline
+
+#### 4.3.1 Preprocessing Steps
+
+**Step 1: Data Preparation**
+```bash
+python src/prepare_data.py
+```
 Operations:
+- Read styles.csv metadata
+- Select top 10 categories
+- Filter valid images
+- Stratified train/val/test split
+- Copy images to processed folders
 
-Read styles.csv metadata
-Select top 10 categories
-Filter valid images
-Stratified train/val/test split
-Copy images to processed folders
-
-Step 2: Data Augmentation (Training Only)
-pythontrain_datagen = ImageDataGenerator(
+**Step 2: Data Augmentation (Training Only)**
+```python
+train_datagen = ImageDataGenerator(
     rescale=1./255,
     rotation_range=20,
     width_shift_range=0.1,
@@ -628,15 +706,18 @@ pythontrain_datagen = ImageDataGenerator(
     zoom_range=0.1,
     horizontal_flip=True
 )
-Step 3: Normalization
+```
 
-All images resized to 224x224
-Pixel values scaled to [0, 1]
-RGB format enforced
+**Step 3: Normalization**
+- All images resized to 224x224
+- Pixel values scaled to [0, 1]
+- RGB format enforced
 
-4.3.2 Data Validation
-Quality Checks:
-pythondef validate_dataset():
+#### 4.3.2 Data Validation
+
+**Quality Checks:**
+```python
+def validate_dataset():
     checks = []
     
     # Check 1: All categories present
@@ -658,61 +739,75 @@ pythondef validate_dataset():
             checks.append(False)
     
     return all(checks)
-4.4 Data Storage
-4.4.1 Local Storage
-Storage Requirements:
+```
 
-Raw Data: 2.3 GB (original dataset)
-Processed Data: 1.8 GB (selected categories)
-Model Files: 14 MB (trained model)
-Results: ~500 MB (batch results, logs)
-Total: ~4.6 GB
+---
 
-Cleanup Strategy:
-bash# Remove old batch results (>30 days)
+### 4.4 Data Storage
+
+#### 4.4.1 Local Storage
+
+**Storage Requirements:**
+- Raw Data: 2.3 GB (original dataset)
+- Processed Data: 1.8 GB (selected categories)
+- Model Files: 14 MB (trained model)
+- Results: ~500 MB (batch results, logs)
+- Total: ~4.6 GB
+
+**Cleanup Strategy:**
+```bash
+# Remove old batch results (>30 days)
 find data/processed_batches -mtime +30 -delete
 
 # Archive old logs
 gzip logs/*.log.old
-4.4.2 Cloud Storage
+```
+
+#### 4.4.2 Cloud Storage
+
 Google Cloud Storage:
+- Bucket: fashion-classifier-data
+- Model Storage: gs://fashion-classifier-data/models/
+- Backup Strategy: Weekly backups
+- Retention: 90 days
 
-Bucket: fashion-classifier-data
-Model Storage: gs://fashion-classifier-data/models/
-Backup Strategy: Weekly backups
-Retention: 90 days
+#### 4.4.3 Database Storage
 
-4.4.3 Database Storage
 SQLite Database (logs/execution_history.db):
+- Batch runs: All batch processing history
+- API calls: Request logs (last 30 days)
+- Alerts: Alert history (last 90 days)
+- Size: ~50 MB
+- Backup: Daily automated backups
 
-Batch runs: All batch processing history
-API calls: Request logs (last 30 days)
-Alerts: Alert history (last 90 days)
-Size: ~50 MB
-Backup: Daily automated backups
+---
 
-4.5 Data Access
-4.5.1 API Data Access
-Input:
+### 4.5 Data Access
 
-Images uploaded via POST request
-Stored temporarily in memory
-Processed immediately
-Not persisted after response
+#### 4.5.1 API Data Access
 
-Output:
+**Input:**
+- Images uploaded via POST request
+- Stored temporarily in memory
+- Processed immediately
+- Not persisted after response
 
-JSON response with predictions
-Logged to database
-Available via /stats endpoint
+**Output:**
+- JSON response with predictions
+- Logged to database
+- Available via /stats endpoint
 
-4.5.2 Batch Processing Access
-Input Directory:
+#### 4.5.2 Batch Processing Access
+
+**Input Directory:**
+```
 data/incoming/
 ├── return_20251013_001.jpg
 ├── return_20251013_002.jpg
 └── ...
-Output:
+```
+**Output:**
+```
 results/batch_results/
 ├── batch_results_20251013_020000.csv      # Predictions
 ├── summary_20251013_020000.json           # Summary stats
@@ -722,14 +817,20 @@ data/processed_batches/
 ├── Tshirts/
 │   └── return_20251013_001.jpg            # Organized by category
 └── ...
-4.5.3 Results Access
-CSV Format:
-csvfilename,category,confidence,status,timestamp
+```
+
+#### 4.5.3 Results Access
+
+**CSV Format:**
+```csv
+filename,category,confidence,status,timestamp
 return_001.jpg,Tshirts,0.9534,success,2025-10-13T02:01:23
 return_002.jpg,Casual Shoes,0.8891,success,2025-10-13T02:01:25
 return_003.jpg,Handbags,0.6723,success,2025-10-13T02:01:27
-JSON Format:
-json{
+```
+**JSON Format:**
+```json
+{
   "timestamp": "20251013_020000",
   "total_processed": 150,
   "successful": 147,
@@ -740,33 +841,37 @@ json{
     "Handbags": 28
   }
 }
-4.6 Data Privacy and Compliance
-4.6.1 Privacy Measures
-No Personal Data:
+```
 
-✅ Only product images processed
-✅ No customer information stored
-✅ No personally identifiable information (PII)
-✅ GDPR compliant
-
-Data Retention:
-
-Batch results: 30 days
-Execution logs: 90 days
-API logs: 30 days
-Automated cleanup after retention period
-
-4.6.2 Security
-Access Control:
-
-API: Public endpoint (unauthenticated for demo)
-Database: Local access only
-Cloud Storage: IAM-based access control
-Logs: Server-side only, not exposed via API
-
-Reference: See DATASETS.md for complete dataset documentation.
 ---
 
+### 4.6 Data Privacy and Compliance
+
+#### 4.6.1 Privacy Measures
+
+**No Personal Data:**
+- ✅ Only product images processed
+- ✅ No customer information stored
+- ✅ No personally identifiable information (PII)
+- ✅ GDPR compliant
+
+**Data Retention:**
+- Batch results: 30 days
+- Execution logs: 90 days
+- API logs: 30 days
+- Automated cleanup after retention period
+
+#### 4.6.2 Security
+
+**Access Control:**
+- API: Public endpoint (unauthenticated for demo)
+- Database: Local access only
+- Cloud Storage: IAM-based access control
+- Logs: Server-side only, not exposed via API
+
+Reference: See DATASETS.md for complete dataset documentation.
+
+---
 ## 5. System Design
 
 ### 5.1 Architecture Overview
@@ -780,71 +885,74 @@ The Fashion Classification System follows a microservices architecture with thre
 ![Architecture Diagram](docs/architecture_diagram.png)
 
 #### 5.1.1 High-Level Architecture
+
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        USERS / CLIENTS                          │
-│  (Web Browser, Mobile App, Returns Department Staff)           │
+│  (Web Browser, Mobile App, Returns Department Staff)            │
 └────────────────┬────────────────────────────────────────────────┘
 │
 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                     PRESENTATION LAYER                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │  Web UI      │  │  REST API    │  │  Batch       │         │
-│  │  (Optional)  │  │  Endpoints   │  │  Interface   │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  Web UI      │  │  REST API    │  │  Batch       │           │
+│  │  (Optional)  │  │  Endpoints   │  │  Interface   │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
 └────────────────┬────────────────────────────────────────────────┘
 │
 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      APPLICATION LAYER                          │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │             Flask Application (app.py)                   │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │  │
-│  │  │  Prediction │  │  Validation │  │  Error      │     │  │
-│  │  │  Handler    │  │  Logic      │  │  Handling   │     │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘     │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │        Batch Processor (batch_processor.py)              │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │  │
-│  │  │  File       │  │  Batch      │  │  Results    │     │  │
-│  │  │  Scanner    │  │  Processing │  │  Writer     │     │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘     │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │             Flask Application (app.py)                   │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │    │
+│  │  │  Prediction │  │  Validation │  │  Error      │       │    │
+│  │  │  Handler    │  │  Logic      │  │  Handling   │       │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘       │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │        Batch Processor (batch_processor.py)              │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │    │
+│  │  │  File       │  │  Batch      │  │  Results    │       │    │
+│  │  │  Scanner    │  │  Processing │  │  Writer     │       │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘       │    │
+│  └──────────────────────────────────────────────────────────┘    │
 └────────────────┬────────────────────────────────────────────────┘
 │
 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      ML MODEL LAYER                             │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │             MobileNetV2 Model                            │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │  │
-│  │  │ Pre-trained │  │  Custom     │  │  Prediction │     │  │
-│  │  │ Base Model  │→ │  Classifier │→ │  Output     │     │  │
-│  │  │ (ImageNet)  │  │  (10 class) │  │  (softmax)  │     │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘     │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │             MobileNetV2 Model                            │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │    │
+│  │  │ Pre-trained │  │  Custom     │  │  Prediction │       │    │
+│  │  │ Base Model  │→ │  Classifier │→ │  Output     │       │    │
+│  │  │ (ImageNet)  │  │  (10 class) │  │  (softmax)  │       │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘       │    │
+│  └──────────────────────────────────────────────────────────┘    │
 └────────────────┬────────────────────────────────────────────────┘
 │
 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      DATA LAYER                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │  Image       │  │  Results     │  │  Execution   │         │
-│  │  Storage     │  │  Database    │  │  History DB  │         │
-│  │  (Local/GCS) │  │  (CSV/JSON)  │  │  (SQLite)    │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  Image       │  │  Results     │  │  Execution   │           │
+│  │  Storage     │  │  Database    │  │  History DB  │           │
+│  │  (Local/GCS) │  │  (CSV/JSON)  │  │  (SQLite)    │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
 └────────────────┬────────────────────────────────────────────────┘
 │
 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                   MONITORING & LOGGING                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │  Alert       │  │  Health      │  │  Dashboard   │         │
-│  │  Manager     │  │  Checks      │  │  (Grafana)   │         │
-│  │  (Email/Slack│  │  (API/Batch) │  │              │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  Alert       │  │  Health      │  │  Dashboard   │           │
+│  │  Manager     │  │  Checks      │  │  (Grafana)   │           │
+│  │  (Email/Slack│  │  (API/Batch) │  │              │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
 └─────────────────────────────────────────────────────────────────┘
+```
 
 ### 5.2 Component Design
 
@@ -858,38 +966,34 @@ The Fashion Classification System follows a microservices architecture with thre
 - **Deployment:** Docker + Google Cloud Run
 
 **Key Modules:**
-```python
+```
 api/
 ├── app.py                    # Main Flask application
 ├── requirements.txt          # Dependencies
-├── Dockerfile               # Container configuration
-└── README.md                # API documentation
+├── Dockerfile                # Container configuration
+└── README.md                 # API documentation
+```
 Request Flow:
-1. Client sends POST /predict with image
-   ↓
-2. Flask receives multipart/form-data
-   ↓
-3. Validate file (size, format, existence)
-   ↓
-4. Preprocess image (resize, normalize)
-   ↓
-5. Model inference (MobileNetV2)
-   ↓
-6. Post-process predictions (argmax, format)
-   ↓
-7. Log prediction to database
-   ↓
-8. Return JSON response to client
-5.2.2 Batch Processing Component
-Technology Stack:
+1. Client sends POST `/predict` with image  
+2. Flask receives multipart/form-data  
+3. Validate file (size, format, existence)  
+4. Preprocess image (resize, normalize)  
+5. Model inference (MobileNetV2)  
+6. Post-process predictions (argmax, format)  
+7. Log prediction to database  
+8. Return JSON response to client  
 
-Language: Python 3.10
-Scheduler: Windows Task Scheduler / Cron
-Database: SQLite (execution history)
-Alerting: SMTP (email) + Slack webhooks
+#### 5.2.2 Batch Processing Component
 
-Key Modules:
-pythonsrc/
+**Technology Stack:**  
+- Language: Python 3.10  
+- Scheduler: Windows Task Scheduler / Cron  
+- Database: SQLite (execution history)  
+- Alerting: SMTP (email) + Slack webhooks  
+
+**Key Modules:**
+```
+src/
 ├── batch_processor.py        # Main batch logic
 └── utils.py                  # Helper functions
 
@@ -897,54 +1001,45 @@ monitoring/
 ├── alerting.py              # Alert management
 ├── execution_history.py     # History tracking
 └── dashboard.py             # Monitoring UI
+```
 Batch Flow:
-1. Scheduled trigger (2 AM daily)
-   ↓
-2. Scan incoming directory for images
-   ↓
-3. For each image:
-   │  a. Send to API endpoint
-   │  b. Get prediction result
-   │  c. Move to category folder
-   │  d. Log result to CSV
-   ↓
-4. Generate summary report
-   ↓
-5. Send alerts if needed (failures, low confidence)
-   ↓
-6. Update execution history database
-   ↓
-7. Generate HTML report (optional)
-5.2.3 Model Training Component
-Technology Stack:
+1. Scheduled trigger (2 AM daily)  
+2. Scan incoming directory for images  
+3. For each image:  
+   a. Send to API endpoint  
+   b. Get prediction result  
+   c. Move to category folder  
+   d. Log result to CSV  
+4. Generate summary report  
+5. Send alerts if needed (failures, low confidence)  
+6. Update execution history database  
+7. Generate HTML report (optional)  
 
-Framework: TensorFlow/Keras
-Base Model: MobileNetV2 (ImageNet weights)
-Data Augmentation: ImageDataGenerator
-Callbacks: ModelCheckpoint, EarlyStopping
+#### 5.2.3 Model Training Component
+
+**Technology Stack:**  
+- Framework: TensorFlow/Keras  
+- Base Model: MobileNetV2 (ImageNet weights)  
+- Data Augmentation: ImageDataGenerator  
+- Callbacks: ModelCheckpoint, EarlyStopping  
 
 Training Pipeline:
-1. Load dataset (25,465 images)
-   ↓
-2. Split into train/val/test (70/15/15)
-   ↓
-3. Create data generators with augmentation
-   ↓
-4. Load MobileNetV2 base (freeze weights)
-   ↓
-5. Add custom classification head
-   ↓
-6. Compile model (Adam optimizer)
-   ↓
-7. Train for 20 epochs
-   ↓
-8. Evaluate on test set
-   ↓
-9. Save model (.keras format)
-   ↓
-10. Generate visualizations
-5.3 Data Flow Diagrams
-5.3.1 Real-Time Prediction Flow
+1. Load dataset (25,465 images)  
+2. Split into train/val/test (70/15/15)  
+3. Create data generators with augmentation  
+4. Load MobileNetV2 base (freeze weights)  
+5. Add custom classification head  
+6. Compile model (Adam optimizer)  
+7. Train for 20 epochs  
+8. Evaluate on test set  
+9. Save model (.keras format)  
+10. Generate visualizations  
+
+### 5.3 Data Flow Diagrams
+
+#### 5.3.1 Real-Time Prediction Flow
+
+```
 ┌─────────┐       ┌─────────────┐       ┌──────────┐
 │  User   │──1──→ │  REST API   │──2──→ │  Model   │
 │ Request │       │  (Flask)    │       │(MobileV2)│
@@ -959,7 +1054,11 @@ Training Pipeline:
                          └──────5──────│ Response │
                                        │  (JSON)  │
                                        └──────────┘
-5.3.2 Batch Processing Flow
+```
+
+#### 5.3.2 Batch Processing Flow
+
+```
 ┌────────────────┐     ┌─────────────────┐     ┌─────────────┐
 │   Incoming     │     │     Batch       │     │   REST API  │
 │   Directory    │──→  │   Processor     │──→  │             │
@@ -984,9 +1083,16 @@ Training Pipeline:
                        │Send Alerts  │
                        │(Email/Slack)│
                        └─────────────┘
-5.4 Database Schema
-5.4.1 Execution History Database
-sql-- Table: batch_runs
+```
+
+---
+
+### 5.4 Database Schema
+
+#### 5.4.1 Execution History Database
+
+```sql
+-- Table: batch_runs
 -- Purpose: Track all batch processing executions
 CREATE TABLE batch_runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1029,8 +1135,11 @@ CREATE INDEX idx_batch_timestamp ON batch_runs(timestamp);
 CREATE INDEX idx_api_timestamp ON api_calls(timestamp);
 CREATE INDEX idx_alerts_severity ON alerts(severity);
 CREATE INDEX idx_alerts_resolved ON alerts(resolved);
-Example Queries:
-sql-- Get recent failed batches
+```
+
+**Example Queries:**
+```sql
+-- Get recent failed batches
 SELECT * FROM batch_runs 
 WHERE status = 'failed' 
 AND timestamp >= datetime('now', '-30 days')
@@ -1046,19 +1155,40 @@ SELECT * FROM alerts
 WHERE severity = 'CRITICAL'
 AND resolved = 0
 ORDER BY timestamp DESC;
-5.5 API Design
-5.5.1 Endpoint Specifications
+```
+
+---
+
+### 5.5 API Design
+
+#### 5.5.1 Endpoint Specifications
+
 Base URL: https://fashion-classifier-api-728466800559.europe-west1.run.app
-EndpointMethodPurposeAuthRate Limit/healthGETHealth checkNoUnlimited/predictPOSTSingle imageNo100/hour/predict_batchPOSTMultiple imagesNo20/hour/classesGETList categoriesNoUnlimited/statsGETAPI statisticsNo10/min/versionGETModel versionNoUnlimited
-5.5.2 Request/Response Formats
-Single Prediction:
+
+| Endpoint           | Method | Purpose               | Auth | Rate Limit    |
+|--------------------|--------|-----------------------|------|--------------|
+| /health            | GET    | Health check          | No   | Unlimited    |
+| /predict           | POST   | Single image          | No   | 100/hour     |
+| /predict_batch     | POST   | Multiple images       | No   | 20/hour      |
+| /classes           | GET    | List categories       | No   | Unlimited    |
+| /stats             | GET    | API statistics        | No   | 10/min       |
+| /version           | GET    | Model version         | No   | Unlimited    |
+
+#### 5.5.2 Request/Response Formats
+
+**Single Prediction:**
+
 Request:
-httpPOST /predict HTTP/1.1
+```
+POST /predict HTTP/1.1
 Content-Type: multipart/form-data
 
 file: [binary image data]
+```
+
 Response:
-json{
+```json
+{
   "category": "Tshirts",
   "confidence": 0.9534,
   "timestamp": "2025-10-13T15:30:00Z",
@@ -1070,83 +1200,100 @@ json{
     "Casual Shoes": 0.0031
   }
 }
+```
+
 Error Response:
-json{
+```json
+{
   "error": "No file provided",
   "status": 400,
   "timestamp": "2025-10-13T15:30:00Z"
 }
-5.6 Security Design
-5.6.1 API Security
-Current Implementation:
+```
 
-✅ Rate limiting (100 requests/hour per IP)
-✅ File size validation (max 10MB)
-✅ File type validation (images only)
-✅ Input sanitization
-✅ HTTPS only (Cloud Run enforced)
+---
+
+### 5.6 Security Design
+
+#### 5.6.1 API Security
+
+Current Implementation:
+- ✅ Rate limiting (100 requests/hour per IP)
+- ✅ File size validation (max 10MB)
+- ✅ File type validation (images only)
+- ✅ Input sanitization
+- ✅ HTTPS only (Cloud Run enforced)
 
 Not Implemented (Demo Project):
+- ❌ Authentication/Authorization
+- ❌ API keys
+- ❌ User management
 
-❌ Authentication/Authorization
-❌ API keys
-❌ User management
-
-Production Recommendations:
-python# API Key authentication
+**Production Recommendations:**
+```python
+# API Key authentication
 @app.before_request
 def check_api_key():
     api_key = request.headers.get('X-API-Key')
     if not validate_api_key(api_key):
         return jsonify({'error': 'Invalid API key'}), 401
-5.6.2 Data Security
-Storage:
+```
 
-Images: Not permanently stored (processed in memory)
-Results: Stored locally with file permissions
-Database: SQLite with restricted access
-Logs: Rotated and archived after 30 days
+#### 5.6.2 Data Security
+
+Storage:
+- Images: Not permanently stored (processed in memory)
+- Results: Stored locally with file permissions
+- Database: SQLite with restricted access
+- Logs: Rotated and archived after 30 days
 
 Privacy:
+- No personal data collected
+- No customer information in logs
+- GDPR compliant (no PII)
+- Images auto-deleted after processing
 
-No personal data collected
-No customer information in logs
-GDPR compliant (no PII)
-Images auto-deleted after processing
+---
 
-5.7 Scalability Design
-5.7.1 Horizontal Scaling
+### 5.7 Scalability Design
+
+#### 5.7.1 Horizontal Scaling
+
 Current Setup:
-
-Cloud Run: Auto-scales 0-100 instances
-Trigger: CPU utilization > 60%
-Scale down: After 15 minutes idle
+- Cloud Run: Auto-scales 0-100 instances
+- Trigger: CPU utilization > 60%
+- Scale down: After 15 minutes idle
 
 Load Testing Results:
-Concurrent Users: 50
-Requests: 1000
-Success Rate: 99.8%
-Avg Response Time: 2.4s
-Max Response Time: 8.2s
-5.7.2 Performance Optimization
-Implemented:
+- Concurrent Users: 50
+- Requests: 1000
+- Success Rate: 99.8%
+- Avg Response Time: 2.4s
+- Max Response Time: 8.2s
 
-✅ Model loaded once on startup (singleton pattern)
-✅ Image caching for repeated predictions
-✅ Batch processing during off-peak hours
-✅ Response compression (gzip)
-✅ Database connection pooling
+#### 5.7.2 Performance Optimization
+
+Implemented:
+- ✅ Model loaded once on startup (singleton pattern)
+- ✅ Image caching for repeated predictions
+- ✅ Batch processing during off-peak hours
+- ✅ Response compression (gzip)
+- ✅ Database connection pooling
 
 Future Optimizations:
+- Model quantization (reduce size by 75%)
+- GPU inference (3-5x faster)
+- CDN for static assets
+- Redis caching layer
 
-Model quantization (reduce size by 75%)
-GPU inference (3-5x faster)
-CDN for static assets
-Redis caching layer
+---
 
-5.8 Deployment Architecture
-5.8.1 Container Architecture
-dockerfile# Dockerfile structure
+### 5.8 Deployment Architecture
+
+#### 5.8.1 Container Architecture
+
+**Dockerfile structure:**
+```dockerfile
 FROM python:3.10-slim
 
 # Install dependencies
@@ -1163,8 +1310,12 @@ ENV PYTHONUNBUFFERED=1
 
 # Run application
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "api.app:app"]
-5.8.2 Cloud Run Configuration
-yamlapiVersion: serving.knative.dev/v1
+```
+
+#### 5.8.2 Cloud Run Configuration
+
+```yaml
+apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: fashion-classifier-api
@@ -1185,5 +1336,7 @@ spec:
             cpu: "1"
         ports:
         - containerPort: 8080
+```
 Reference: See ARCHITECTURE.md for complete architectural documentation.
 
+---
