@@ -1,4 +1,4 @@
-markdown# Monitoring Examples and Alert Scenarios
+# Monitoring Examples and Alert Scenarios
 
 Practical examples for monitoring the Fashion Classification System with real-world alert scenarios.
 
@@ -31,28 +31,33 @@ SMTP_PASSWORD=your-app-password
 
 # Slack Configuration
 SLACK_WEBHOOK=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-Gmail App Password Setup
+```
 
-Go to Google Account settings
-Security → 2-Step Verification
-App passwords → Generate new
-Select "Mail" and "Other device"
-Copy the 16-character password
-Use in SMTP_PASSWORD
+**Gmail App Password Setup**
 
-Slack Webhook Setup
+- Go to Google Account settings
+- Security → 2-Step Verification
+- App passwords → Generate new
+- Select "Mail" and "Other device"
+- Copy the 16-character password
+- Use in SMTP_PASSWORD
 
-Go to https://api.slack.com/apps
-Create New App → From scratch
-Add "Incoming Webhooks"
-Activate and create webhook
-Copy webhook URL
-Use in SLACK_WEBHOOK
+**Slack Webhook Setup**
 
+- Go to https://api.slack.com/apps
+- Create New App → From scratch
+- Add "Incoming Webhooks"
+- Activate and create webhook
+- Copy webhook URL
+- Use in SLACK_WEBHOOK
 
-Email Alerts
-Manual Test
-pythonfrom monitoring.alerting import AlertManager
+---
+
+## Email Alerts
+
+**Manual Test**
+```python
+from monitoring.alerting import AlertManager
 
 alerts = AlertManager()
 
@@ -62,7 +67,10 @@ alerts.send_email_alert(
     message="This is a test email from the monitoring system.",
     severity="INFO"
 )
-Example Email Output
+```
+
+**Example Email Output**
+```
 Subject: [WARNING] Fashion Classifier - High Error Rate
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -81,10 +89,15 @@ indicate issues with the model or API.
 
 This is an automated alert from Fashion 
 Classification System
+```
 
-Slack Alerts
-Manual Test
-pythonfrom monitoring.alerting import AlertManager
+---
+
+## Slack Alerts
+
+**Manual Test**
+```python
+from monitoring.alerting import AlertManager
 
 alerts = AlertManager()
 
@@ -93,40 +106,60 @@ alerts.send_slack_alert(
     message="Batch processing completed: 150 images, 98% success rate",
     severity="INFO"
 )
-Example Slack Output
+```
+
+**Example Slack Output**
+```
 🟢 INFO: Fashion Classifier Alert
 
 Batch processing completed: 150 images, 98% success rate
 
 Fashion Classification System
 Today at 2:05 AM
+```
 
-Execution History
-View Recent Runs
-pythonfrom monitoring.execution_history import ExecutionHistoryDB
+---
+
+## Execution History
+
+**View Recent Runs**
+```python
+from monitoring.execution_history import ExecutionHistoryDB
 
 db = ExecutionHistoryDB()
 
 # Get last 7 days of batch runs
 recent = db.get_recent_batch_runs(days=7)
 print(recent)
-Output:
+```
+
+**Output:**
+```
    id           timestamp  total_images  successful  failed  success_rate
 0   5  2025-10-13 02:00:00           150         147       3          98.0
 1   4  2025-10-12 02:00:00           200         198       2          99.0
 2   3  2025-10-11 02:00:00           180         175       5          97.2
-View Failed Runs
-python# Get failed runs
+```
+
+**View Failed Runs**
+```python
+# Get failed runs
 failed = db.get_failed_runs(days=30)
 
 for idx, row in failed.iterrows():
     print(f"❌ {row['timestamp']}: {row['error_message']}")
-Generate Health Report
-pythonfrom monitoring.execution_history import generate_execution_report
+```
+
+**Generate Health Report**
+```python
+from monitoring.execution_history import generate_execution_report
 
 # Generate and display comprehensive report
 generate_execution_report()
-Output:
+```
+
+**Output:**
+```
 ======================================================================
 EXECUTION HISTORY REPORT
 ======================================================================
@@ -158,124 +191,180 @@ API HEALTH (Last 24 Hours):
   Max response time: 5.32s
 
 ======================================================================
+```
 
-Common Alert Scenarios
-Scenario 1: API Down
+---
+
+## Common Alert Scenarios
+
+**Scenario 1: API Down**
+
 When: API health check fails
-Alert:
-pythonfrom monitoring.alerting import AlertManager, AlertScenarios
+
+**Alert:**
+```python
+from monitoring.alerting import AlertManager, AlertScenarios
 
 alerts = AlertManager()
 scenarios = AlertScenarios(alerts)
 
 # Trigger alert
 scenarios.api_down()
+```
+
 Email Subject: [CRITICAL] Fashion Classifier - API Down
-Message:
+
+**Message:**
+```
 Fashion Classification API is not responding. 
 Please check the service immediately.
-Action Required:
+```
 
-Check if API process is running
-Review API logs: logs/api.log
-Restart API: python api/app.py
-Verify with: curl http://localhost:5000/health
+**Action Required:**
+- Check if API process is running
+- Review API logs: logs/api.log
+- Restart API: python api/app.py
+- Verify with: curl http://localhost:5000/health
 
+---
 
-Scenario 2: High Error Rate
+**Scenario 2: High Error Rate**
+
 When: Error rate exceeds 10%
-Trigger:
-pythonscenarios.high_error_rate(error_rate=15.5, threshold=10)
+
+**Trigger:**
+```python
+scenarios.high_error_rate(error_rate=15.5, threshold=10)
+```
 Alert Channels: Email + Slack
-Message:
+
+**Message:**
+```
 Error rate is 15.5% (threshold: 10%). 
 This may indicate issues with the model or API.
-Action Required:
+```
 
-Check recent images for quality issues
-Review API error logs
-Verify model is loaded correctly
-Check if specific categories failing
+**Action Required:**
+- Check recent images for quality issues
+- Review API error logs
+- Verify model is loaded correctly
+- Check if specific categories failing
 
+---
 
-Scenario 3: Batch Processing Failed
+**Scenario 3: Batch Processing Failed**
+
 When: Batch run encounters fatal error
-Trigger:
-pythonscenarios.batch_processing_failed(
+
+**Trigger:**
+```python
+scenarios.batch_processing_failed(
     error_message="ConnectionError: Unable to reach API"
 )
+```
 Alert Channels: Email + Slack
-Action Required:
 
-Check batch processing logs
-Verify API is accessible
-Retry batch processing manually
-Check disk space and permissions
+**Action Required:**
+- Check batch processing logs
+- Verify API is accessible
+- Retry batch processing manually
+- Check disk space and permissions
 
+---
 
-Scenario 4: Low Confidence Predictions
+**Scenario 4: Low Confidence Predictions**
+
 When: Many predictions have confidence < 70%
-Trigger:
-pythonscenarios.low_confidence_predictions(count=45, threshold=50)
+
+**Trigger:**
+```python
+scenarios.low_confidence_predictions(count=45, threshold=50)
+```
 Alert Severity: WARNING
-Message:
+
+**Message:**
+```
 45 predictions with confidence < 70% detected. 
 This may indicate poor image quality or model degradation.
-Action Required:
+```
 
-Review low-confidence images
-Check image quality (lighting, angle, clarity)
-Consider retraining model if systematic issue
-Flag images for manual review
+**Action Required:**
+- Review low-confidence images
+- Check image quality (lighting, angle, clarity)
+- Consider retraining model if systematic issue
+- Flag images for manual review
 
+---
 
-Scenario 5: Disk Space Low
+**Scenario 5: Disk Space Low**
+
 When: Available disk space < 5GB
-Trigger:
-pythonscenarios.disk_space_low(available_gb=3.2)
+
+**Trigger:**
+```python
+scenarios.disk_space_low(available_gb=3.2)
+```
 Alert Severity: WARNING
-Action Required:
 
-Clean up old logs: rm logs/*.log.1 logs/*.log.2
-Archive old results
-Remove old processed images
-Increase disk space if needed
+**Action Required:**
+- Clean up old logs: rm logs/*.log.1 logs/*.log.2
+- Archive old results
+- Remove old processed images
+- Increase disk space if needed
 
+---
 
-Scenario 6: Model Not Loaded
+**Scenario 6: Model Not Loaded**
+
 When: API starts but model fails to load
-Trigger:
-pythonscenarios.model_not_loaded()
+
+**Trigger:**
+```python
+scenarios.model_not_loaded()
+```
 Alert Severity: CRITICAL
-Action Required:
 
-Check model files exist in models/
-Verify model file integrity
-Check available RAM
-Review API startup logs
+**Action Required:**
+- Check model files exist in models/
+- Verify model file integrity
+- Check available RAM
+- Review API startup logs
 
+---
 
-Scenario 7: Batch Processing Success
+**Scenario 7: Batch Processing Success**
+
 When: Batch completes successfully (info only)
-Trigger:
-pythonscenarios.batch_processing_success({
+
+**Trigger:**
+```python
+scenarios.batch_processing_success({
     'total': 150,
     'success_rate': 98.0,
     'time': 180.5
 })
+```
 Alert Channels: Slack only
-Message:
+
+**Message:**
+```
 ✓ Nightly batch processing completed successfully.
 
 Stats:
 - Total processed: 150
 - Success rate: 98.0%
 - Processing time: 180.5s
+```
 
-Automated Monitoring
-Daily Health Check Script
+---
+
+## Automated Monitoring
+
+**Daily Health Check Script**
+
 Create monitoring/daily_check.py:
-python"""
+```python
+"""
 Daily automated health check
 Run via cron/Task Scheduler
 """
@@ -328,13 +417,20 @@ def daily_health_check():
 
 if __name__ == "__main__":
     daily_health_check()
-Schedule (Cron):
-bash# Run daily at 9 AM
+```
+**Schedule (Cron):**
+```bash
+# Run daily at 9 AM
 0 9 * * * cd /path/to/project && python monitoring/daily_check.py
+```
 
-Continuous Monitoring Script
+---
+
+**Continuous Monitoring Script**
+
 Create monitoring/continuous_monitor.py:
-python"""
+```python
+"""
 Continuous monitoring - runs in background
 """
 import time
@@ -381,22 +477,28 @@ def continuous_monitor(check_interval=300):
 
 if __name__ == "__main__":
     continuous_monitor(check_interval=300)  # 5 minutes
-Run in background:
-bash# Linux/Mac
+```
+**Run in background:**
+```bash
+# Linux/Mac
 nohup python monitoring/continuous_monitor.py &
-
 # Windows (use Task Scheduler to run at startup)
+```
 
-Troubleshooting Alerts
-Issue: Emails not sending
+---
+
+## Troubleshooting Alerts
+
+**Issue: Emails not sending**
+
 Possible causes:
+- Gmail blocking "less secure apps"
+- Wrong app password
+- Firewall blocking SMTP port
 
-Gmail blocking "less secure apps"
-Wrong app password
-Firewall blocking SMTP port
-
-Solutions:
-python# Test SMTP connection
+**Solutions:**
+```python
+# Test SMTP connection
 import smtplib
 
 try:
@@ -407,10 +509,13 @@ try:
     server.quit()
 except Exception as e:
     print(f"✗ SMTP connection failed: {e}")
+```
 
-Issue: Slack webhooks not working
-Solutions:
-python# Test webhook
+**Issue: Slack webhooks not working**
+
+**Solutions:**
+```python
+# Test webhook
 import requests
 import json
 
@@ -420,13 +525,15 @@ payload = {"text": "Test message"}
 response = requests.post(webhook, data=json.dumps(payload))
 print(f"Status: {response.status_code}")
 print(f"Response: {response.text}")
+```
 
-Issue: Too many alerts
-Solutions:
+**Issue: Too many alerts**
+
+**Solutions:**
 
 Rate limiting:
-
-pythonclass AlertManager:
+```python
+class AlertManager:
     def __init__(self):
         self.last_alert_time = {}
         self.min_alert_interval = 3600  # 1 hour
@@ -440,24 +547,26 @@ pythonclass AlertManager:
             self.last_alert_time[alert_type] = current_time
             return True
         return False
+```
 
 Alert digest:
-Send one daily summary instead of individual alerts.
+- Send one daily summary instead of individual alerts.
 
+---
 
-Best Practices
+## Best Practices
 
-Test alerts first: Always test with INFO severity before deploying
-Set appropriate thresholds: Adjust based on your workload
-Use rate limiting: Avoid alert fatigue
-Monitor the monitors: Ensure alerting system itself is working
-Document on-call procedures: Clear steps for each alert type
-Regular review: Check alert history weekly to tune thresholds
+- Test alerts first: Always test with INFO severity before deploying
+- Set appropriate thresholds: Adjust based on your workload
+- Use rate limiting: Avoid alert fatigue
+- Monitor the monitors: Ensure alerting system itself is working
+- Document on-call procedures: Clear steps for each alert type
+- Regular review: Check alert history weekly to tune thresholds
 
+---
 
-Support
+## Support
 
-Documentation: MONITORING.md
-Execution History: python monitoring/execution_history.py
-Dashboard: python monitoring/dashboard.py
-
+- Documentation: MONITORING.md
+- Execution History: python monitoring/execution_history.py
+- Dashboard: python monitoring/dashboard.py
