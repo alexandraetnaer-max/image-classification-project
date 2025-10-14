@@ -1,4 +1,4 @@
-markdown# Usage Examples and Scenarios
+# Usage Examples and Scenarios
 
 Complete guide with practical examples for using the Fashion Classification System.
 
@@ -25,37 +25,54 @@ Complete guide with practical examples for using the Fashion Classification Syst
 ```bash
 # Make sure you have an image file
 ls product_photo.jpg
-Step 2: Send to API
-bashcurl -X POST \
+```
+
+**Step 2: Send to API**
+```bash
+curl -X POST \
   -F "file=@product_photo.jpg" \
   https://fashion-classifier-api-728466800559.europe-west1.run.app/predict
-Response:
-json{
+```
+
+**Response:**
+```json
+{
   "category": "Tshirts",
   "confidence": 0.9534,
   "timestamp": "2025-10-13T15:30:00"
 }
-Interpretation:
+```
 
-Product is classified as "Tshirts"
-Model is 95.34% confident
-High confidence = reliable prediction
+**Interpretation:**
+- Product is classified as "Tshirts"
+- Model is 95.34% confident
+- High confidence = reliable prediction
 
+---
 
-Example 2: Classify Multiple Products
-Scenario: You have a folder with 10 product images to classify.
-Step 1: Navigate to folder
-bashcd /path/to/product/images
+### Example 2: Classify Multiple Products
+
+**Scenario:** You have a folder with 10 product images to classify.
+
+**Step 1: Navigate to folder**
+```bash
+cd /path/to/product/images
 ls
 # product_1.jpg  product_2.jpg  product_3.jpg  ...
-Step 2: Batch classify
-bashcurl -X POST \
+```
+
+**Step 2: Batch classify**
+```bash
+curl -X POST \
   -F "files=@product_1.jpg" \
   -F "files=@product_2.jpg" \
   -F "files=@product_3.jpg" \
   https://fashion-classifier-api-728466800559.europe-west1.run.app/predict_batch
-Response:
-json{
+```
+
+**Response:**
+```json
+{
   "predictions": [
     {"filename": "product_1.jpg", "category": "Tshirts", "confidence": 0.95},
     {"filename": "product_2.jpg", "category": "Shoes", "confidence": 0.89},
@@ -63,29 +80,42 @@ json{
   ],
   "total": 3
 }
+```
 
-Example 3: Automated Nightly Classification
-Scenario: Process all new product images every night at 2 AM.
-Step 1: Place images in incoming folder
-bash# Throughout the day, add images here
+---
+
+### Example 3: Automated Nightly Classification
+
+**Scenario:** Process all new product images every night at 2 AM.
+
+**Step 1: Place images in incoming folder**
+```bash
+# Throughout the day, add images here
 cp new_products/*.jpg data/incoming/
-Step 2: Set up automation
-Windows (Task Scheduler):
+```
 
-Open Task Scheduler
-Create task: "Nightly Product Classification"
-Trigger: Daily at 2:00 AM
-Action: run_batch_processing.bat
+**Step 2: Set up automation**
 
-Linux/Mac (Cron):
-bash# Edit crontab
+**Windows (Task Scheduler):**
+- Open Task Scheduler
+- Create task: "Nightly Product Classification"
+- Trigger: Daily at 2:00 AM
+- Action: run_batch_processing.bat
+
+**Linux/Mac (Cron):**
+```bash
+# Edit crontab
 crontab -e
 
 # Add this line
 0 2 * * * /path/to/run_batch_processing.sh
-Step 3: Results
+```
+
+**Step 3: Results**
+
 Next morning, check:
-bash# Organized by category
+```bash
+# Organized by category
 ls data/processed_batches/
 # Tshirts/  Shoes/  Handbags/  ...
 
@@ -93,11 +123,17 @@ ls data/processed_batches/
 cat results/batch_results/batch_results_*.csv
 # filename,category,confidence,status,timestamp
 # product_1.jpg,Tshirts,0.95,success,2025-10-13T02:01:23
+```
 
-API Integration Examples
-Python Integration
-Example 1: Single Product Classification
-pythonimport requests
+---
+
+## API Integration Examples
+
+### Python Integration
+
+**Example 1: Single Product Classification**
+```python
+import requests
 from pathlib import Path
 
 def classify_product(image_path):
@@ -129,8 +165,11 @@ def classify_product(image_path):
 
 # Usage
 result = classify_product('product_photo.jpg')
-Example 2: Batch Classification with Progress
-pythonimport requests
+```
+
+**Example 2: Batch Classification with Progress**
+```python
+import requests
 from pathlib import Path
 from tqdm import tqdm
 
@@ -173,8 +212,11 @@ import pandas as pd
 df = pd.DataFrame(results)
 df.to_csv('classification_results.csv', index=False)
 print(f"Classified {len(results)} products")
-Example 3: Real-time Classification with Retry Logic
-pythonimport requests
+```
+
+**Example 3: Real-time Classification with Retry Logic**
+```python
+import requests
 import time
 from typing import Optional
 
@@ -231,9 +273,14 @@ def classify_with_retry(
 
 # Usage
 result = classify_with_retry('product.jpg')
+```
 
-JavaScript/Node.js Integration
-javascriptconst axios = require('axios');
+---
+
+### JavaScript/Node.js Integration
+
+```javascript
+const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
 
@@ -271,33 +318,42 @@ classifyProduct('product.jpg')
             console.log('Classification successful');
         }
     });
+```
 
-Batch Processing Scenarios
-Scenario 1: Daily Product Upload Processing
-Context: E-commerce site receives 500-1000 new product photos daily.
-Workflow:
+---
 
-Morning (9 AM): Photographers upload new products
+## Batch Processing Scenarios
 
-bash# Images uploaded to server
-/uploads/2025-10-13/
-├── product_001.jpg
-├── product_002.jpg
-└── ...
+### Scenario 1: Daily Product Upload Processing
 
-Throughout Day: Images accumulate in incoming folder
+**Context:** E-commerce site receives 500-1000 new product photos daily.
 
-bash# Automated sync
+**Workflow:**
+
+**Morning (9 AM):** Photographers upload new products
+```bash
+# Images uploaded to server
+# /uploads/2025-10-13/
+# ├── product_001.jpg
+# ├── product_002.jpg
+# └── ...
+```
+
+**Throughout Day:** Images accumulate in incoming folder
+```bash
+# Automated sync
 rsync -av /uploads/$(date +%Y-%m-%d)/ data/incoming/
+```
 
-Night (2 AM): Batch processing runs automatically
-
-bash# Task Scheduler / Cron executes
+**Night (2 AM):** Batch processing runs automatically
+```bash
+# Task Scheduler / Cron executes
 python src/batch_processor.py
+```
 
-Morning (8 AM): Results ready for review
-
-bash# Check results
+**Morning (8 AM):** Results ready for review
+```bash
+# Check results
 cat results/batch_results/batch_results_20251013_020000.csv
 
 # Organized by category
@@ -305,10 +361,11 @@ ls data/processed_batches/
 # Tshirts/     (45 images)
 # Shoes/       (32 images)
 # Handbags/    (28 images)
+```
 
-Review & Action:
-
-pythonimport pandas as pd
+**Review & Action:**
+```python
+import pandas as pd
 
 # Load results
 df = pd.read_csv('results/batch_results/batch_results_latest.csv')
@@ -321,12 +378,19 @@ print(f"Review {len(low_confidence)} products with low confidence")
 summary = df['category'].value_counts()
 print("Daily Product Breakdown:")
 print(summary)
+```
 
-Scenario 2: Inventory Categorization
-Context: Warehouse has 10,000 uncategorized product photos.
-Workflow:
-Week 1: Setup
-bash# Split into batches (1000 images each)
+---
+
+### Scenario 2: Inventory Categorization
+
+**Context:** Warehouse has 10,000 uncategorized product photos.
+
+**Workflow:**
+
+**Week 1: Setup**
+```bash
+# Split into batches (1000 images each)
 mkdir -p batches/batch_{01..10}
 split -n 10 -d product_list.txt batches/
 
@@ -342,14 +406,20 @@ done
 EOF
 
 chmod +x process_inventory.sh
-Week 2-3: Processing
-bash# Run batch processing
+```
+
+**Week 2-3: Processing**
+```bash
+# Run batch processing
 ./process_inventory.sh > processing.log 2>&1
 
 # Monitor progress
 tail -f processing.log
-Week 4: Analysis
-pythonimport pandas as pd
+```
+
+**Week 4: Analysis**
+```python
+import pandas as pd
 import glob
 
 # Combine all results
@@ -368,13 +438,21 @@ print(combined['category'].value_counts())
 
 # Export for inventory system
 combined.to_csv('inventory_categories.csv', index=False)
+```
 
-Business Use Cases
-Use Case 1: E-commerce Product Onboarding
-Problem: Manual product categorization is slow and inconsistent.
-Solution: Automated classification at upload time.
-Implementation:
-python# Product upload handler
+---
+
+## Business Use Cases
+
+### Use Case 1: E-commerce Product Onboarding
+
+**Problem:** Manual product categorization is slow and inconsistent.
+
+**Solution:** Automated classification at upload time.
+
+**Implementation:**
+```python
+# Product upload handler
 def handle_product_upload(image_file, product_id):
     """
     Process product image on upload
@@ -407,18 +485,24 @@ def handle_product_upload(image_file, product_id):
         print(f"Product {product_id} flagged for review")
     
     return result
-Benefits:
+```
 
-80% of products auto-categorized
-20% flagged for quick manual review
-Saves 2-3 hours daily
+**Benefits:**
+- 80% of products auto-categorized
+- 20% flagged for quick manual review
+- Saves 2-3 hours daily
 
+---
 
-Use Case 2: Quality Control
-Problem: Products sometimes mislabeled or photos unclear.
-Solution: Confidence scoring for quality control.
-Implementation:
-pythondef quality_control_check(products_folder):
+### Use Case 2: Quality Control
+
+**Problem:** Products sometimes mislabeled or photos unclear.
+
+**Solution:** Confidence scoring for quality control.
+
+**Implementation:**
+```python
+def quality_control_check(products_folder):
     """
     Check product photo quality and correct categorization
     
@@ -458,65 +542,102 @@ pythondef quality_control_check(products_folder):
         print("All products correctly categorized!")
     
     return issues
+```
 
-Returns Department Workflow
-Complete Step-by-Step Guide for Returns Processing
-Context: Fashion returns department receives 200-300 returned items daily. Items must be:
+---
 
-Photographed
-Categorized
-Quality checked
-Routed to correct warehouse section
+## Returns Department Workflow
 
+**Complete Step-by-Step Guide for Returns Processing**
 
-Daily Returns Processing Workflow
-Morning Setup (8:00 AM)
-Step 1: Prepare workspace
-bash# Create today's returns folder
+**Context:** Fashion returns department receives 200-300 returned items daily. Items must be:
+
+- Photographed
+- Categorized
+- Quality checked
+- Routed to correct warehouse section
+
+---
+
+### Daily Returns Processing Workflow
+
+**Morning Setup (8:00 AM)**
+
+**Step 1: Prepare workspace**
+```bash
+# Create today's returns folder
 mkdir -p returns/$(date +%Y-%m-%d)
 cd returns/$(date +%Y-%m-%d)
-Step 2: Set up photo station
+```
 
-Light box ready
-Camera/phone connected
-Naming convention: return_YYYYMMDD_NNN.jpg
+**Step 2: Set up photo station**
+- Light box ready
+- Camera/phone connected
+- Naming convention: return_YYYYMMDD_NNN.jpg
 
+---
 
-During Day: Photo Collection (8 AM - 4 PM)
-Step 1: Receive returned item
-Return ID: RET-20251013-001
-Customer: John Doe
-Reason: Size issue
-Step 2: Photograph item
-bash# Photo naming format
+**During Day: Photo Collection (8 AM - 4 PM)**
+
+**Step 1: Receive returned item**
+- Return ID: RET-20251013-001
+- Customer: John Doe
+- Reason: Size issue
+
+**Step 2: Photograph item**
+```bash
+# Photo naming format
 return_20251013_001.jpg
-Step 3: Move to processing folder
-bash# Copy to incoming folder for batch processing
+```
+
+**Step 3: Move to processing folder**
+```bash
+# Copy to incoming folder for batch processing
 cp *.jpg ../../data/incoming/
-Progress tracking:
-bash# Check how many processed today
+```
+
+**Progress tracking:**
+```bash
+# Check how many processed today
 ls -1 ../../data/incoming/ | wc -l
 # 247 files
+```
 
-After Hours: Automated Classification (4 PM or overnight)
-Option A: Manual trigger (if needed urgently)
-bashcd /path/to/project
+---
+
+**After Hours: Automated Classification (4 PM or overnight)**
+
+**Option A: Manual trigger (if needed urgently)**
+```bash
+cd /path/to/project
 python src/batch_processor.py
-Option B: Scheduled (automatic at 5 PM)
-Task runs automatically via Task Scheduler
-Processing takes: ~5 minutes for 300 images
+```
 
-Next Morning: Results Review (8:00 AM)
-Step 1: Open results
-bash# View latest batch results
+**Option B: Scheduled (automatic at 5 PM)**
+- Task runs automatically via Task Scheduler
+- Processing takes: ~5 minutes for 300 images
+
+---
+
+**Next Morning: Results Review (8:00 AM)**
+
+**Step 1: Open results**
+```bash
+# View latest batch results
 cat results/batch_results/batch_results_20251013_170000.csv
+```
+
 Excel format:
+```
 filename                    | category      | confidence | status
 return_20251013_001.jpg    | Tshirts       | 0.95       | success
 return_20251013_002.jpg    | Casual Shoes  | 0.88       | success
 return_20251013_003.jpg    | Handbags      | 0.72       | success
-Step 2: Review classification
-pythonimport pandas as pd
+```
+
+**Step 2: Review classification**
+```python
+import pandas as pd
 
 # Load results
 df = pd.read_csv('results/batch_results/batch_results_20251013_170000.csv')
@@ -534,9 +655,13 @@ print(f"\n=== AUTO-PROCESSED: {len(high_conf)} items ===")
 # Category breakdown
 print("\n=== CATEGORY SUMMARY ===")
 print(df['category'].value_counts())
-Step 3: Physical organization
+```
+
+**Step 3: Physical organization**
+
 Items already organized in folders:
-bashdata/processed_batches/
+```
+data/processed_batches/
 ├── Tshirts/
 │   ├── return_20251013_001.jpg  (RET-20251013-001)
 │   ├── return_20251013_015.jpg
@@ -546,21 +671,22 @@ bashdata/processed_batches/
 │   └── ... (45 items)
 └── Handbags/
     └── ... (32 items)
+```
+
 Physical routing:
+- Print pick lists by category
+- Route to warehouse sections:
+    - Tshirts → Section A, Aisle 3
+    - Shoes → Section B, Aisle 7
+    - Handbags → Section C, Aisle 2
 
-Print pick lists by category
-Route to warehouse sections:
+---
 
-Tshirts → Section A, Aisle 3
-Shoes → Section B, Aisle 7
-Handbags → Section C, Aisle 2
+### Weekly Reports (Friday)
 
-
-
-
-Weekly Reports (Friday)
 Generate weekly summary:
-pythonimport pandas as pd
+```python
+import pandas as pd
 import glob
 from datetime import datetime, timedelta
 
@@ -608,23 +734,29 @@ print(report)
 # Save report
 with open(f'weekly_report_{datetime.now().strftime("%Y%m%d")}.txt', 'w') as f:
     f.write(report)
+```
 
-Returns Department Best Practices
-1. Photo Quality Guidelines:
-✅ Good photos:
+---
+
+## Returns Department Best Practices
+
+**1. Photo Quality Guidelines:**
+- ✅ Good photos:
    - Clean background (white/gray)
    - Item centered
    - Good lighting
    - Full item visible
    - One item per photo
 
-❌ Avoid:
+- ❌ Avoid:
    - Multiple items in one photo
    - Dark/blurry images
    - Extreme angles
    - Item partially out of frame
-2. Handling Edge Cases:
-pythondef handle_uncertain_classification(row):
+
+**2. Handling Edge Cases:**
+```python
+def handle_uncertain_classification(row):
     """
     Decision tree for uncertain classifications
     """
@@ -649,19 +781,24 @@ manual = df[df['action'] == 'MANUAL_REVIEW']
 print(f"Auto-process: {len(auto)} items")
 print(f"Quick review: {len(quick)} items (15 mins)")
 print(f"Manual review: {len(manual)} items (30 mins)")
-3. Performance Metrics:
+```
+
+**3. Performance Metrics:**
 Track these KPIs weekly:
 
-Total returns processed
-Classification accuracy (spot checks)
-Time saved vs manual processing
-Items needing manual review (goal: <15%)
-Processing speed (items/hour)
+- Total returns processed
+- Classification accuracy (spot checks)
+- Time saved vs manual processing
+- Items needing manual review (goal: <15%)
+- Processing speed (items/hour)
 
+---
 
-Integration with Existing Systems
-Inventory Management System Integration:
-python# Example: Update inventory system
+## Integration with Existing Systems
+
+**Inventory Management System Integration:**
+```python
+# Example: Update inventory system
 def update_inventory_system(classification_results):
     """
     Update inventory management system with classifications
@@ -684,26 +821,41 @@ def update_inventory_system(classification_results):
         # If high confidence, auto-approve for restocking
         if row['confidence'] > 0.90:
             inventory_api.mark_for_restock(return_id)
+```
 
-Support and Troubleshooting
-Common Issues
-Issue 1: API timeout
-python# Solution: Increase timeout
+---
+
+## Support and Troubleshooting
+
+**Common Issues**
+
+**Issue 1: API timeout**
+```python
+# Solution: Increase timeout
 response = requests.post(api_url, files=files, timeout=60)  # 60 seconds
-Issue 2: Large batch fails
-python# Solution: Process in smaller chunks
+```
+
+**Issue 2: Large batch fails**
+```python
+# Solution: Process in smaller chunks
 def process_large_batch(images, chunk_size=10):
     for i in range(0, len(images), chunk_size):
         chunk = images[i:i+chunk_size]
         process_chunk(chunk)
         time.sleep(5)  # Pause between chunks
-Issue 3: Low confidence predictions
-python# Solution: Retake photo with better lighting/angle
+```
+
+**Issue 3: Low confidence predictions**
+```python
+# Solution: Retake photo with better lighting/angle
 # Or flag for manual review
+```
 
-Resources
+---
 
-API Documentation: api/README.md
-Batch Processing Guide: BATCH_SCHEDULING.md
-Monitoring Dashboard: monitoring/dashboard.py
-Support: GitHub Issues
+## Resources
+
+- API Documentation: api/README.md
+- Batch Processing Guide: BATCH_SCHEDULING.md
+- Monitoring Dashboard: monitoring/dashboard.py
+- Support: GitHub Issues
