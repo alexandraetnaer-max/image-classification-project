@@ -92,6 +92,7 @@ model = tf.keras.Sequential([
     Dropout(0.2),
     Dense(10, activation='softmax')
 ])
+```
 
 **Step 2: API Integration**
 ```python
@@ -105,6 +106,7 @@ def predict():
     category = CATEGORIES[np.argmax(predictions)]
     confidence = float(np.max(predictions))
     return jsonify({'category': category, 'confidence': confidence})
+```
 
 **Step 3: Cloud Deployment**
 
@@ -129,8 +131,8 @@ Only trained final classification head
 Used categorical cross-entropy loss
 Adam optimizer with learning rate 0.001
 
-###1.4 Preprocessing Pipeline
-
+### 1.4 Preprocessing Pipeline
+```bash
 pythondef preprocess_image(image_path):
     # Load image
     img = Image.open(image_path)
@@ -149,6 +151,7 @@ pythondef preprocess_image(image_path):
     img_array = np.expand_dims(img_array, axis=0)
     
     return img_array
+```
 
 **1.5 API Design**
 
@@ -156,12 +159,13 @@ RESTful Endpoints:
 EndpointMethodPurposeResponse Time/healthGETHealth check<100ms/predictPOSTSingle image2-3s/predict_batchPOSTMultiple images5-10s/classesGETList categories<100ms/statsGETAPI statistics<100ms/versionGETModel version<100ms
 
 Example Request:
-
+```bash
 bashcurl -X POST -F "file=@product.jpg" \
   https://fashion-classifier-api-728466800559.europe-west1.run.app/predict
+```
 
 Example Response:
-
+```bash
 json{
   "category": "Tshirts",
   "confidence": 0.9534,
@@ -174,29 +178,31 @@ json{
     "Others": 0.0031
   }
 }
+```
 
 **1.6 Integration Challenges and Solutions**
 
 ChallengeSolutionModel size (56MB initially)Used MobileNetV2 (14MB), quantizationSlow inference (5-7s)Batch processing, model optimizationMemory usage (4GB)Reduced to 2GB with efficient loadingCold start (30s)Keep-alive pings, pre-warmed instancesDifferent image formatsAuto-conversion to RGB, format handling
 
-Reference: See ARCHITECTURE.md for detailed integration architecture.
+**Reference:** See ARCHITECTURE.md for detailed integration architecture.
 
-##2. Service Implementation Constraints
-###2.1 Technical Constraints
-####2.1.1 Memory Constraints
+## 2. Service Implementation Constraints
+### 2.1 Technical Constraints
+#### 2.1.1 Memory Constraints
 
 Cloud Run Limit: 2GB RAM per container
 Model Memory: ~500MB (loaded model)
 Request Memory: ~50MB per image
 Max Concurrent: ~20 requests simultaneously
 
-Mitigation:
+**Mitigation:**
 ```python
 # Efficient model loading
 model = tf.keras.models.load_model('models/fashion_classifier.keras')
 model.compile()  # Pre-compile for faster inference
+```
 
-####2.1.2 Response Time Constraints
+#### 2.1.2 Response Time Constraints
 
 Target: <3 seconds per prediction
 Actual: 2-3 seconds average
@@ -210,7 +216,7 @@ Model inference: 1.5s
 Response formatting: 0.1s
 Total: ~2.3s
 
-####2.1.3 File Size Constraints
+#### 2.1.3 File Size Constraints
 
 Maximum: 10MB per image
 Recommended: <5MB
@@ -221,15 +227,16 @@ Formats: JPG, PNG, BMP, GIF, WEBP, TIFF
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 if file.content_length > MAX_FILE_SIZE:
     return jsonify({'error': 'File too large'}), 400
+```
 
-####2.1.4 Rate Limiting
+#### 2.1.4 Rate Limiting
 
 API Calls: 100 requests per hour per IP
 Batch Size: Maximum 50 images per batch
 Concurrent: Maximum 10 concurrent requests per user
 
 **Implementation:**
-
+```bash
 pythonfrom flask_limiter import Limiter
 
 limiter = Limiter(app, key_func=get_remote_address)
@@ -238,9 +245,10 @@ limiter = Limiter(app, key_func=get_remote_address)
 @limiter.limit("100 per hour")
 def predict():
     # Handle prediction
+```
 
-###2.2 Infrastructure Constraints
-####2.2.1 Cloud Run Limitations
+### 2.2 Infrastructure Constraints
+#### 2.2.1 Cloud Run Limitations
 
 Cold Start Time: 10-15 seconds
 Max Instances: 100 (auto-scaling limit)
@@ -248,7 +256,7 @@ Request Timeout: 300 seconds maximum
 CPU: 1 vCPU per container
 Scaling: Automatic based on CPU/memory usage
 
-####2.2.2 Cost Constraints
+#### 2.2.2 Cost Constraints
 
 Free Tier: 2 million requests/month
 Beyond Free Tier: $0.00024 per request
@@ -262,8 +270,8 @@ Batch processing during off-peak hours
 Cache frequent predictions
 Minimize cold starts
 
-###2.3 Accuracy Constraints
-####2.3.1 Model Performance Limits
+### 2.3 Accuracy Constraints
+#### 2.3.1 Model Performance Limits
 
 Validation Accuracy: 91.78%
 Error Rate: 8.22%
@@ -274,7 +282,7 @@ Manual Review Needed: ~15-20% of predictions
 
 CategoryAccuracyCommon ErrorsTshirts95.2%Confused with TopsCasual Shoes92.8%Confused with Sports ShoesHandbags91.5%Various accessoriesWatches94.1%Clear featuresShirts89.3%Confused with Tshirts
 
-####2.3.2 Image Quality Requirements
+#### 2.3.2 Image Quality Requirements
 
 Good Quality (>90% confidence):
 
@@ -292,40 +300,41 @@ Poor Quality (<70% confidence):
 ❌ Low resolution (<300px)
 ❌ Multiple products
 
-###2.4 Business Constraints
-####2.4.1 Operational Requirements
+### 2.4 Business Constraints
+#### 2.4.1 Operational Requirements
 
 Availability: 99% uptime target
 Response Time: <5 seconds (business requirement)
 Batch Processing: Overnight (2 AM - 6 AM)
 Manual Review: Human-in-the-loop for <70% confidence
 
-####2.4.2 Compliance and Privacy
+#### 2.4.2 Compliance and Privacy
 
 GDPR: No personal data stored
 Data Retention: Processed images kept 30 days
 Audit Trail: All predictions logged
 Anonymization: No customer information in logs
 
-2.5 Scalability Constraints
-2.5.1 Current Limits
+### 2.5 Scalability Constraints
+#### 2.5.1 Current Limits
 
 Daily Requests: ~500 API calls
 Batch Processing: ~200-300 images/night
 Storage: 100GB allocated (50GB used)
 
-2.5.2 Growth Projections
+#### 2.5.2 Growth Projections
 
 6 Months: 1,000 requests/day
 12 Months: 2,000 requests/day
 Strategy: Horizontal scaling with Cloud Run
 
-Reference: See CLOUD_DEPLOYMENT.md for detailed constraints.
+**Reference:** See CLOUD_DEPLOYMENT.md for detailed constraints.
 
-3. Quality Assurance and Monitoring
-3.1 Testing Strategy
-3.1.1 Test Coverage
-Total Tests: 60 tests (100% pass rate)
+## 3. Quality Assurance and Monitoring
+### 3.1 Testing Strategy
+#### 3.1.1 Test Coverage
+
+**Total Tests:** 60 tests (100% pass rate)
 tests/
 ├── test_api.py              # 10 API endpoint tests
 ├── test_batch_processor.py  # 8 batch processing tests
@@ -333,14 +342,17 @@ tests/
 ├── test_integration.py      # 15 end-to-end tests
 ├── test_edge_cases.py       # 18 edge case tests
 └── test_utils.py           # Helper test functions
-Test Distribution:
+
+**Test Distribution:**
 
 Unit Tests: 27 tests (45%)
 Integration Tests: 15 tests (25%)
 Edge Cases: 18 tests (30%)
 
-3.1.2 Unit Tests Example
-python# tests/test_api.py
+#### 3.1.2 Unit Tests Example
+
+```python
+# tests/test_api.py
 def test_predict_endpoint_success(self):
     """Test successful image prediction"""
     with open('test_images/tshirt.jpg', 'rb') as f:
@@ -355,16 +367,21 @@ def test_predict_endpoint_success(self):
     self.assertIn('category', data)
     self.assertIn('confidence', data)
     self.assertGreater(data['confidence'], 0)
-3.1.3 Integration Tests
-python# tests/test_integration.py
+```
+
+#### 3.1.3 Integration Tests
+```python
+# tests/test_integration.py
 def test_end_to_end_workflow(self):
     """Test complete workflow: image → API → result"""
     # 1. Upload image
     # 2. Get prediction
     # 3. Verify result
     # 4. Check logging
-3.1.4 Edge Case Tests
-python# tests/test_edge_cases.py
+```
+#### 3.1.4 Edge Case Tests
+```python
+# tests/test_edge_cases.py
 class TestImageEdgeCases:
     def test_corrupted_image(self):
         """Test handling of corrupted images"""
@@ -374,9 +391,12 @@ class TestImageEdgeCases:
         
     def test_grayscale_image(self):
         """Test grayscale to RGB conversion"""
-3.2 Monitoring System
-3.2.1 Health Checks
-API Health Endpoint:
+```
+### 3.2 Monitoring System
+#### 3.2.1 Health Checks
+
+**API Health Endpoint:**
+```bash
 python@app.route('/health')
 def health():
     return jsonify({
@@ -385,38 +405,53 @@ def health():
         'timestamp': datetime.now().isoformat(),
         'uptime': get_uptime()
     })
-Automated Health Monitoring:
-bash# monitoring/check_api_health.py
+```
+
+**Automated Health Monitoring:**
+```bash
+# monitoring/check_api_health.py
 # Runs every 5 minutes via cron
-0,5,10,15,20,25,30,35,40,45,50,55 * * * * python monitoring/check_api_health.py
-3.2.2 Logging System
-Log Levels:
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * 
+python monitoring/check_api_health.py
+```
+
+#### 3.2.2 Logging System
+
+**Log Levels:**
 
 INFO: Normal operations (predictions, batch runs)
 WARNING: Low confidence, potential issues
 ERROR: Failed predictions, API errors
 CRITICAL: System failures, model not loaded
 
-Log Files:
+**Log Files:**
+
 logs/
 ├── api.log              # API request logs
 ├── batch_20251013.log   # Batch processing logs
 ├── alerts.log           # Alert history
 └── errors.log           # Error tracking
-Example Log Entry:
+
+**Example Log Entry:**
+
 [2025-10-13 14:30:15] INFO: Prediction request received
 [2025-10-13 14:30:17] INFO: Category: Tshirts, Confidence: 95.34%
 [2025-10-13 14:30:17] INFO: Response sent (2.1s)
-3.2.3 Alert Management
-Alert Channels:
+
+#### 3.2.3 Alert Management
+
+**Alert Channels:**
 
 Email - Critical issues, daily summaries
 Slack - All alerts, real-time notifications
 Log Files - Complete audit trail
 
-Alert Scenarios:
+**Alert Scenarios:**
+
 Alert TypeSeverityTriggerChannelAPI DownCRITICALHealth check fails 3xEmail + SlackHigh Error RateERROR>10% predictions failEmail + SlackLow ConfidenceWARNING>50 predictions <70%SlackBatch FailedERRORBatch processing errorEmail + SlackDisk Space LowWARNING<5GB availableEmailModel Not LoadedCRITICALModel load failureEmail + SlackSuccess SummaryINFOBatch completesSlack
-Example Alert (Slack):
+
+**Example Alert (Slack):**
+
 🔴 CRITICAL: Fashion Classifier Alert
 
 API Down
@@ -426,8 +461,10 @@ Please check the service immediately.
 
 Fashion Classification System
 Today at 2:05 AM
-3.2.4 Execution History Database
-SQLite Database Schema:
+
+#### 3.2.4 Execution History Database
+```bash
+#SQLite Database Schema:
 sql-- Batch runs tracking
 CREATE TABLE batch_runs (
     id INTEGER PRIMARY KEY,
@@ -441,7 +478,7 @@ CREATE TABLE batch_runs (
     error_message TEXT
 );
 
--- API calls tracking
+# API calls tracking
 CREATE TABLE api_calls (
     id INTEGER PRIMARY KEY,
     timestamp TEXT,
@@ -451,7 +488,7 @@ CREATE TABLE api_calls (
     success BOOLEAN
 );
 
--- Alerts tracking
+#Alerts tracking
 CREATE TABLE alerts (
     id INTEGER PRIMARY KEY,
     timestamp TEXT,
@@ -460,15 +497,19 @@ CREATE TABLE alerts (
     message TEXT,
     resolved BOOLEAN
 );
-Query Example:
+#Query Example:
 python# Get last 7 days of batch runs
 db = ExecutionHistoryDB()
 recent_runs = db.get_recent_batch_runs(days=7)
-3.2.5 Dashboard
+```
+
+#### 3.2.5 Dashboard
+
 Real-time Monitoring Dashboard:
 bashpython monitoring/dashboard.py
 # Opens at http://localhost:8050
-Dashboard Metrics:
+
+**Dashboard Metrics:**
 
 API health status
 Request rate (requests/hour)
