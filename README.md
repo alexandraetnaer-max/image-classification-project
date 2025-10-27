@@ -337,14 +337,14 @@ See CLOUD_DEPLOYMENT.md for deployment guide.
 
 ## 📚 Documentation
 
-- ARCHITECTURE.md: System architecture and components
-- DOCKER_INSTRUCTIONS.md: Docker setup guide
-- BATCH_SCHEDULING.md: Batch automation guide
-- CLOUD_DEPLOYMENT.md: Cloud deployment guide
-- MONITORING.md: Monitoring and logging guide
-- VISUALIZATION.md: Visualization and reporting guide
-- TESTING.md: Testing guide
-- api/README.md: API documentation
+- [ARCHITECTURE.md](ARCHITECTURE.md): System architecture and components
+- [DOCKER_INSTRUCTIONS.md](DOCKER_INSTRUCTIONS.md): Docker setup guide
+- [BATCH_SCHEDULING.md](BATCH_SCHEDULING.md): Batch automation guide
+- [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md): Cloud deployment guide
+- [MONITORING.md](MONITORING.md): Monitoring and logging guide
+- [VISUALIZATION.md](VISUALIZATION.md): Visualization and reporting guide
+- [TESTING.md](TESTING.md): Testing guide
+- [api/README.md](api/README.md): API documentation
 
 ---
 
