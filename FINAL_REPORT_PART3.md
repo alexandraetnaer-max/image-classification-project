@@ -624,21 +624,21 @@ The project is ready for production use and has a clear path for future improvem
 
 Project Documentation:
 
-1. [README.md] - Main project documentation  
-2. [ARCHITECTURE.md] - System architecture  
-3. [API Documentation] - API endpoints and examples  
-4. [CLOUD_DEPLOYMENT.md] - Deployment guide  
-5. [BATCH_SCHEDULING.md] - Batch processing automation  
-6. [MONITORING.md] - Monitoring system  
-7. [MONITORING_EXAMPLES.md] - Alert scenarios  
-8. [TESTING.md] - Testing documentation  
-9. [VISUALIZATION.md] - Visualization guide  
-10. [USAGE_EXAMPLES.md] - Usage examples and workflows  
-11. [QUICK_REFERENCE.md] - Quick command reference  
-12. [CODE_STYLE.md](CODE_STYLE.md) - Code style guidelines  
-13. [DATASETS.md](DATASETS.md) - Dataset documentation  
-14. [DOCKER_INSTRUCTIONS.md](DOCKER_INSTRUCTIONS.md) - Docker setup  
-15. [LICENSE](LICENSE) - MIT License  
+1. [README.md](README.md) - Main project documentation
+2. [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+3. [API Documentation](api/README.md) - API endpoints and examples
+4. [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) - Deployment guide
+5. [BATCH_SCHEDULING.md](BATCH_SCHEDULING.md) - Batch processing automation
+6. [MONITORING.md](MONITORING.md) - Monitoring system
+7. [MONITORING_EXAMPLES.md](MONITORING_EXAMPLES.md) - Alert scenarios
+8. [TESTING.md](TESTING.md) - Testing documentation
+9. [VISUALIZATION.md](VISUALIZATION.md) - Visualization guide
+10. [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) - Usage examples and workflows
+11. [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Quick command reference
+12. [CODE_STYLE.md](CODE_STYLE.md) - Code style guidelines
+13. [DATASETS.md](DATASETS.md) - Dataset documentation
+14. [DOCKER_INSTRUCTIONS.md](DOCKER_INSTRUCTIONS.md) - Docker setup
+15. [LICENSE](LICENSE) - MIT License
 
 ### 13.2 Code Repository
 

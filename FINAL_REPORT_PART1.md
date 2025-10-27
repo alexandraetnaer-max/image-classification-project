@@ -42,15 +42,14 @@ This project implements a production-ready machine learning system for automatic
 3. [Quality Assurance and Monitoring](#3-quality-assurance-and-monitoring)
 4. [Data Management](#4-data-management)
 5. [System Design](#5-system-design)
-6. [Batch Processing Monitoring](#6-batch-processing-monitoring)
-7. [Business Integration (Refund Department)](#7-business-integration-refund-department)
-8. [Results and Metrics](#8-results-and-metrics)
-9. [Visualizations](#9-visualizations)
-10. [Deployment and Operations](#10-deployment-and-operations)
-11. [Testing Strategy](#11-testing-strategy)
-12. [Conclusions and Future Work](#12-conclusions-and-future-work)
-13. [References](#13-references)
-
+6. [System Design](FINAL_REPORT_PART2.md#6-system-design)
+7. [Batch Processing Monitoring](FINAL_REPORT_PART2.md#7-batch-processing-monitoring)
+8. [Results and Metrics](FINAL_REPORT_PART2.md#8-results-and-metrics)
+9. [Visualizations](FINAL_REPORT_PART2.md#9-visualizations)
+10. [Deployment and Operations](FINAL_REPORT_PART2.md#10-deployment-and-operations)
+11. [Testing Strategy](FINAL_REPORT_PART3.md#11-testing-strategy)
+12. [Conclusions and Future Work](FINAL_REPORT_PART3.md#12-conclusions-and-future-work)
+13. [References](FINAL_REPORT_PART3.md#13-references)
 ---
 
 ## 1. Model Integration into Service
