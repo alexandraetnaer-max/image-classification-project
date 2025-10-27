@@ -1,8 +1,9 @@
 # FINAL_REPORT — PART 3
 
-11. Testing Strategy
+## 11. Testing Strategy
 
-11.1 Testing Overview  
+### 11.1 Testing Overview
+
 Testing Philosophy:
 
 Comprehensive coverage (60 tests total)  
@@ -21,42 +22,44 @@ Test Pyramid:
 /────────────\ Edge Cases (18)
 ```
 
-11.2 Test Categories
+### 11.2 Test Categories
 
 #### 11.2.1 Unit Tests (27 tests)
 
 Purpose: Test individual functions and components in isolation  
-Coverage:
-- tests/test_api.py (10 tests)
-  - test_health_endpoint()
-  - test_predict_endpoint_success()
-  - test_predict_endpoint_no_file()
-  - test_predict_endpoint_invalid_file()
-  - test_classes_endpoint()
-  - test_stats_endpoint()
-  - test_version_endpoint()
-  - test_predict_batch_endpoint()
-  - test_rate_limiting()
-  - test_file_size_validation()
-- tests/test_batch_processor.py (8 tests)
-  - test_initialization()
-  - test_logging()
-  - test_get_incoming_images()
-  - test_organize_image()
-  - test_save_results()
-  - test_check_api_health()
-  - test_process_image_success()
-  - test_process_image_failure()
-- tests/test_data_preparation.py (9 tests)
-  - test_data_directory_structure()
-  - test_train_val_test_split()
-  - test_category_distribution()
-  - test_image_count_validation()
-  - test_file_format_validation()
-  - test_stratified_split()
-  - test_minimum_images_per_category()
-  - test_duplicate_detection()
-  - test_data_integrity()
+Coverage:  
+tests/test_api.py (10 tests)
+- test_health_endpoint()
+- test_predict_endpoint_success()
+- test_predict_endpoint_no_file()
+- test_predict_endpoint_invalid_file()
+- test_classes_endpoint()
+- test_stats_endpoint()
+- test_version_endpoint()
+- test_predict_batch_endpoint()
+- test_rate_limiting()
+- test_file_size_validation()
+
+tests/test_batch_processor.py (8 tests)
+- test_initialization()
+- test_logging()
+- test_get_incoming_images()
+- test_organize_image()
+- test_save_results()
+- test_check_api_health()
+- test_process_image_success()
+- test_process_image_failure()
+
+tests/test_data_preparation.py (9 tests)
+- test_data_directory_structure()
+- test_train_val_test_split()
+- test_category_distribution()
+- test_image_count_validation()
+- test_file_format_validation()
+- test_stratified_split()
+- test_minimum_images_per_category()
+- test_duplicate_detection()
+- test_data_integrity()
 
 Example Unit Test:
 ```python
@@ -70,6 +73,7 @@ def test_predict_endpoint_success(self):
             data={'file': (f, 'tshirt.jpg')},
             content_type='multipart/form-data'
         )
+        
         # Assert
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
@@ -82,23 +86,23 @@ def test_predict_endpoint_success(self):
 #### 11.2.2 Integration Tests (15 tests)
 
 Purpose: Test interaction between multiple components  
-Coverage:
-- tests/test_integration.py (15 tests)
-  - test_end_to_end_workflow()
-  - test_image_to_prediction_workflow()
-  - test_batch_processing_workflow()
-  - test_api_health_to_prediction()
-  - test_directory_creation_pipeline()
-  - test_image_processing_pipeline()
-  - test_error_recovery()
-  - test_data_pipeline()
-  - test_model_loading_and_prediction()
-  - test_result_storage_and_retrieval()
-  - test_alert_system_integration()
-  - test_logging_integration()
-  - test_monitoring_integration()
-  - test_batch_to_database_integration()
-  - test_api_to_monitoring_integration()
+Coverage:  
+tests/test_integration.py (15 tests)
+- test_end_to_end_workflow()
+- test_image_to_prediction_workflow()
+- test_batch_processing_workflow()
+- test_api_health_to_prediction()
+- test_directory_creation_pipeline()
+- test_image_processing_pipeline()
+- test_error_recovery()
+- test_data_pipeline()
+- test_model_loading_and_prediction()
+- test_result_storage_and_retrieval()
+- test_alert_system_integration()
+- test_logging_integration()
+- test_monitoring_integration()
+- test_batch_to_database_integration()
+- test_api_to_monitoring_integration()
 
 Example Integration Test:
 ```python
@@ -108,14 +112,18 @@ def test_end_to_end_workflow(self):
     test_image = 'test_images/tshirt.jpg'
     incoming_path = 'data/incoming/test_tshirt.jpg'
     shutil.copy(test_image, incoming_path)
+    
     # 2. Run batch processing
     processor = BatchProcessor()
     processor.process_batch()
+    
     # 3. Verify results
     results_files = glob.glob('results/batch_results/*.csv')
     self.assertGreater(len(results_files), 0)
+    
     df = pd.read_csv(results_files[-1])
     self.assertIn('test_tshirt.jpg', df['filename'].values)
+    
     # 4. Verify image moved to category folder
     processed_dirs = glob.glob('data/processed_batches/*/')
     found = False
@@ -124,6 +132,7 @@ def test_end_to_end_workflow(self):
             found = True
             break
     self.assertTrue(found)
+    
     # 5. Verify database entry
     db = ExecutionHistoryDB()
     recent = db.get_recent_batch_runs(days=1)
@@ -133,34 +142,34 @@ def test_end_to_end_workflow(self):
 #### 11.2.3 Edge Case Tests (18 tests)
 
 Purpose: Test boundary conditions and unusual scenarios  
-Coverage:
-- tests/test_edge_cases.py (18 tests)
+Coverage:  
+tests/test_edge_cases.py (18 tests)
 
 Image Edge Cases:
-  - test_very_small_image()           # 10x10 pixels
-  - test_very_large_image()           # 4000x4000 pixels
-  - test_non_square_image()           # 100x200 pixels
-  - test_grayscale_image()            # L mode
-  - test_rgba_image_with_transparency() # RGBA mode
-  - test_corrupted_image_bytes()      # Invalid data
-  - test_empty_image_bytes()          # Zero bytes
+- test_very_small_image()           # 10x10 pixels
+- test_very_large_image()           # 4000x4000 pixels
+- test_non_square_image()           # 100x200 pixels
+- test_grayscale_image()            # L mode
+- test_rgba_image_with_transparency() # RGBA mode
+- test_corrupted_image_bytes()      # Invalid data
+- test_empty_image_bytes()          # Zero bytes
 
 API Edge Cases:
-  - test_empty_request_body()         # No file
-  - test_malformed_json()             # Invalid JSON
-  - test_wrong_content_type()         # text/plain
-  - test_oversized_request()          # >10MB
-  - test_multiple_files()             # Multiple uploads
-  - test_special_characters_filename() # Unicode, symbols
+- test_empty_request_body()         # No file
+- test_malformed_json()             # Invalid JSON
+- test_wrong_content_type()         # text/plain
+- test_oversized_request()          # >10MB
+- test_multiple_files()             # Multiple uploads
+- test_special_characters_filename() # Unicode, symbols
 
 Batch Processing Edge Cases:
-  - test_empty_incoming_directory()   # No images
-  - test_mixed_file_types()           # Images + PDFs
-  - test_duplicate_filenames()        # Same name
+- test_empty_incoming_directory()   # No images
+- test_mixed_file_types()           # Images + PDFs
+- test_duplicate_filenames()        # Same name
 
 Data Validation Edge Cases:
-  - test_confidence_boundaries()      # 0.0 and 1.0
-  - test_floating_point_precision()   # 0.1 + 0.2 == 0.3
+- test_confidence_boundaries()      # 0.0 and 1.0
+- test_floating_point_precision()   # 0.1 + 0.2 == 0.3
 
 Example Edge Case Test:
 ```python
@@ -168,6 +177,7 @@ def test_corrupted_image_bytes(self):
     """Test handling of corrupted image data"""
     # Arrange
     corrupted_bytes = b'This is not valid image data'
+    
     # Act & Assert
     with self.assertRaises(Exception):
         Image.open(BytesIO(corrupted_bytes))
@@ -178,6 +188,7 @@ def test_very_large_image(self):
     # Test the resize logic instead
     large_size = (4000, 4000)
     target_size = (224, 224)
+    
     # Verify resize function handles large images
     self.assertIsNotNone(target_size)
     # In actual implementation, would test:
@@ -186,9 +197,7 @@ def test_very_large_image(self):
     # self.assertEqual(resized.size, target_size)
 ```
 
----
-
-11.3 Test Execution
+### 11.3 Test Execution
 
 #### 11.3.1 Running Tests
 
@@ -229,6 +238,7 @@ Success Rate: 100.0%
 ✓ ALL TESTS PASSED!
 ======================================================================
 ```
+
 Run Specific Test Category:
 ```bash
 # Unit tests only
@@ -240,6 +250,7 @@ python -m pytest tests/test_integration.py -v
 # Edge cases only
 python -m pytest tests/test_edge_cases.py -v
 ```
+
 Run Single Test:
 ```bash
 python -m pytest tests/test_api.py::TestAPIEndpoints::test_health_endpoint -v
@@ -279,12 +290,10 @@ jobs:
           coverage run -m pytest
           coverage report
 ```
-Test Results Badge:
+Test Results Badge:  
 ![Tests](https://github.com/alexandraetnaer-max/image-classification-project/workflows/Run%20Tests/badge.svg)
 
----
-
-11.4 Test Coverage Analysis
+### 11.4 Test Coverage Analysis
 
 Coverage Report:
 ```
@@ -300,16 +309,16 @@ monitoring/execution_history.py     134     16    88%
 TOTAL                              1,024    128    87%
 ```
 Coverage Gaps:
-- Training code (82%): Some error paths not tested
-- Alert delivery (87%): Email/Slack testing mocked
+
+Training code (82%): Some error paths not tested  
+Alert delivery (87%): Email/Slack testing mocked
 
 Action Items:
-- Add integration tests for training pipeline
-- Add more alert delivery scenarios
 
----
+Add integration tests for training pipeline  
+Add more alert delivery scenarios
 
-11.5 Performance Testing
+### 11.5 Performance Testing
 
 #### 11.5.1 Load Testing
 
@@ -330,6 +339,7 @@ class FashionClassifierUser(HttpUser):
     def health_check(self):
         self.client.get('/health')
 ```
+
 Run Load Test:
 ```bash
 locust -f tests/performance/load_test.py \
@@ -338,6 +348,7 @@ locust -f tests/performance/load_test.py \
   --spawn-rate 5 \
   --run-time 5m
 ```
+
 Results:
 ```
 Type     Name            # reqs   # fails   Avg    Min    Max    Median
@@ -362,23 +373,25 @@ locust -f tests/performance/load_test.py \
   --spawn-rate 10
 ```
 Results:
-- 50 users: 99.8% success
-- 100 users: 98.2% success
-- 150 users: 95.1% success (some timeouts)
-- 200 users: 88.5% success (many timeouts)
 
-**Conclusion:** System handles ~150 concurrent users before degradation  
+50 users: 99.8% success  
+100 users: 98.2% success  
+150 users: 95.1% success (some timeouts)  
+200 users: 88.5% success (many timeouts)
+
+Conclusion: System handles ~150 concurrent users before degradation  
 Reference: See TESTING.md for complete testing documentation.
 
 ---
 
-12. Conclusions and Future Work
+## 12. Conclusions and Future Work
 
-12.1 Project Summary
+### 12.1 Project Summary
 
 This project successfully implemented a production-ready machine learning system for automatic fashion product classification, with a specific focus on batch processing for a refund department. The system achieves its core objectives and provides significant business value.
 
-**Key Achievements:**
+Key Achievements:
+
 - High Accuracy: 91.78% validation accuracy, exceeding the 85% target
 - Production Deployment: Live API on Google Cloud Run with 98.94% uptime
 - Automated Batch Processing: Fully automated nightly processing of 200-300 items
@@ -387,52 +400,54 @@ This project successfully implemented a production-ready machine learning system
 - Business Impact: $20,580 annual savings, 1,344% ROI, 25-day payback period
 - Documentation: 16 documentation files covering all aspects
 
----
-
-12.2 Lessons Learned
+### 12.2 Lessons Learned
 
 #### 12.2.1 Technical Lessons
 
-**What Worked Well:**
-- ✅ Transfer Learning: Using MobileNetV2 provided excellent results with minimal training time
-- ✅ Cloud Run: Serverless deployment simplified operations and scaling
-- ✅ SQLite for History: Simple, effective solution for execution tracking
-- ✅ Batch Processing Focus: Automated overnight processing fits business workflow perfectly
-- ✅ Confidence Thresholds: Flagging low-confidence predictions (<70%) for review works well
+What Worked Well:
 
-**Challenges Overcome:**
-- Cold Start Times: Solved by keeping minimum instances and implementing keep-alive pings
-- Memory Constraints: Optimized to fit within 2GB Cloud Run limit
-- Image Format Variety: Handled with automatic conversion to RGB
-- Error Handling: Comprehensive error handling prevents batch failures
+✅ Transfer Learning: Using MobileNetV2 provided excellent results with minimal training time  
+✅ Cloud Run: Serverless deployment simplified operations and scaling  
+✅ SQLite for History: Simple, effective solution for execution tracking  
+✅ Batch Processing Focus: Automated overnight processing fits business workflow perfectly  
+✅ Confidence Thresholds: Flagging low-confidence predictions (<70%) for review works well
+
+Challenges Overcome:
+
+Cold Start Times: Solved by keeping minimum instances and implementing keep-alive pings  
+Memory Constraints: Optimized to fit within 2GB Cloud Run limit  
+Image Format Variety: Handled with automatic conversion to RGB  
+Error Handling: Comprehensive error handling prevents batch failures
 
 #### 12.2.2 Business Lessons
 
-**Success Factors:**
-- 🎯 Clear Use Case: Focused on specific refund department workflow
-- 🎯 User-Centric Design: Morning review workflow matches staff schedule
-- 🎯 Gradual Adoption: Manual review option builds trust
-- 🎯 Measurable Impact: Clear metrics (time saved, accuracy improved)
+Success Factors:
 
-**Areas for Improvement:**
-- Need better handling of seasonal variations (winter coats, summer items)
-- Some categories (Kurtas, Sunglasses) need more training data
-- User training could be more comprehensive
+🎯 Clear Use Case: Focused on specific refund department workflow  
+🎯 User-Centric Design: Morning review workflow matches staff schedule  
+🎯 Gradual Adoption: Manual review option builds trust  
+🎯 Measurable Impact: Clear metrics (time saved, accuracy improved)
 
----
+Areas for Improvement:
 
-12.3 System Limitations
+Need better handling of seasonal variations (winter coats, summer items)  
+Some categories (Kurtas, Sunglasses) need more training data  
+User training could be more comprehensive
+
+### 12.3 System Limitations
 
 #### 12.3.1 Current Limitations
 
-**Technical Limitations:**
+Technical Limitations:
+
 - Category Coverage: Limited to 10 categories (expandable but requires retraining)
 - Image Quality Dependency: Poor lighting or angles reduce accuracy
 - New Product Types: Model hasn't seen new styles (requires periodic retraining)
 - Processing Speed: 2-3 seconds per image (acceptable but could be faster)
 - Concurrent Users: Degrades above 150 concurrent users
 
-**Business Limitations:**
+Business Limitations:
+
 - Manual Review Required: ~5-6% of items need manual review
 - Seasonal Adaptation: Model trained on all-year data, may not adapt to seasonal trends
 - Fashion Trends: Doesn't automatically adapt to new fashion trends
@@ -440,110 +455,117 @@ This project successfully implemented a production-ready machine learning system
 
 #### 12.3.2 Known Issues
 
-**Minor Issues:**
+Minor Issues:
+
 - Occasional API timeouts during peak load (< 1%)
 - Cold start latency on first request after idle period (~10-15s)
 - Confusion between similar categories (Tshirts ↔ Shirts)
 - Lower accuracy on accessories vs apparel
 
-**Workarounds:**
+Workarounds:
+
 - Keep-alive pings reduce cold starts
 - Retry logic handles timeouts
 - Manual review catches misclassifications
 - Focus manual review on accessories
 
----
-
-12.4 Future Improvements
+### 12.4 Future Improvements
 
 #### 12.4.1 Short-term Improvements (1-3 months)
-1. **Model Enhancements:**
+
+1. Model Enhancements:
    - Fine-tune on production data (7,410 images collected)
    - Add data augmentation for underperforming categories
    - Experiment with EfficientNetB0 (potentially better accuracy)
    - Implement model ensemble (combine multiple models)
-   - **Expected Impact:** Accuracy: 91.78% → 94-95%, Low confidence rate: 5.5% → 3-4%
-2. **Performance Optimization:**
+   - Expected Impact: Accuracy: 91.78% → 94-95%, Low confidence rate: 5.5% → 3-4%
+2. Performance Optimization:
    - Implement model quantization (75% size reduction)
    - Add Redis caching layer for repeated images
    - Parallel batch processing (5x faster)
    - GPU inference option
-   - **Expected Impact:** Response time: 2.3s → 1.0s, Batch time: 8.5 min → 2 min
-3. **User Experience:**
+   - Expected Impact: Response time: 2.3s → 1.0s, Batch time: 8.5 min → 2 min
+3. User Experience:
    - Web interface for manual review (no Excel needed)
    - Real-time API testing page
    - Mobile app for on-the-go classification
    - Bulk upload via drag-and-drop
-   - **Expected Impact:** Review time: 15 min → 5 min, User satisfaction: +20%
+   - Expected Impact: Review time: 15 min → 5 min, User satisfaction: +20%
 
 #### 12.4.2 Medium-term Improvements (3-6 months)
-1. **Advanced Features:**
+
+1. Advanced Features:
    - Multi-label classification (e.g., "Red Cotton Tshirt")
    - Object detection (handle multiple items in one image)
    - Similarity search (find similar products)
    - Automatic cropping and image enhancement
-2. **Integration Enhancements:**
+2. Integration Enhancements:
    - Direct inventory system API integration
    - Automated restock approval workflow
    - Customer service dashboard integration
    - Warehouse management system integration
-3. **Analytics and Insights:**
+3. Analytics and Insights:
    - Trend analysis dashboard
    - Return pattern detection
    - Product quality insights
    - Seasonal forecasting
 
 #### 12.4.3 Long-term Vision (6-12 months)
-1. **Expand to Other Departments:**
+
+1. Expand to Other Departments:
    - New product onboarding
    - Quality control inspection
    - Inventory counting
    - Product photography automation
-2. **Multi-Region Deployment:**
+2. Multi-Region Deployment:
    - Deploy in other warehouses (US, Asia, EU)
    - Regional model adaptation
    - Multi-language support
    - Compliance with local regulations
-3. **Advanced AI Features:**
+3. Advanced AI Features:
    - Defect detection (damaged items)
    - Size estimation from images
    - Material classification (cotton vs polyester)
    - Brand recognition
 
----
-
-12.5 Recommendations
+### 12.5 Recommendations
 
 #### 12.5.1 For Immediate Action
 
-**Priority 1: Collect Production Feedback**  
-- Weekly user interviews (5-10 min)  
-- Survey on system usefulness  
-- Log common manual corrections  
-- Track edge cases  
-- Timeline: Start immediately  
-- Effort: 1 hour/week
+Priority 1: Collect Production Feedback  
+Action Items:
+- Weekly user interviews (5-10 min)
+- Survey on system usefulness
+- Log common manual corrections
+- Track edge cases
 
-**Priority 2: Retrain with Production Data**  
-- Collect 7,410 production images  
-- Label corrections from manual review  
-- Retrain model with augmented dataset  
-- A/B test new vs old model  
-- Timeline: Month 2  
-- Effort: 4 hours  
-- Expected Improvement: +2-3% accuracy
+Timeline: Start immediately  
+Effort: 1 hour/week
 
-**Priority 3: Optimize Batch Processing**  
-- Implement parallel processing (ThreadPoolExecutor)  
-- Add batch size auto-adjustment  
-- Optimize API calls (HTTP/2, connection pooling)  
-- Timeline: Month 1  
-- Effort: 8 hours  
-- Expected Improvement: 5x faster batch processing
+Priority 2: Retrain with Production Data  
+Action Items:
+- Collect 7,410 production images
+- Label corrections from manual review
+- Retrain model with augmented dataset
+- A/B test new vs old model
+
+Timeline: Month 2  
+Effort: 4 hours  
+Expected Improvement: +2-3% accuracy
+
+Priority 3: Optimize Batch Processing  
+Action Items:
+- Implement parallel processing (ThreadPoolExecutor)
+- Add batch size auto-adjustment
+- Optimize API calls (HTTP/2, connection pooling)
+
+Timeline: Month 1  
+Effort: 8 hours  
+Expected Improvement: 5x faster batch processing
 
 #### 12.5.2 For Business Growth
 
-**Expand Use Cases:**
+Expand Use Cases:
 1. New Product Categorization
    - Use same system for incoming products
    - Reduce manual categorization by 80%
@@ -561,30 +583,30 @@ This project successfully implemented a production-ready machine learning system
 
 Total Potential: +$33,000/year additional savings
 
-**Scale to Other Warehouses:**
-- Current: 1 warehouse (Hannover)
-- Potential: 3 warehouses (Hannover, Munich, Hamburg)
-- Per-warehouse ROI: $20,580/year
-- 3-warehouse ROI: $61,740/year
-- Implementation: 2 weeks per warehouse
-- Investment: ~$5,000 (setup + training)
-- Payback: 1 month per warehouse
+Scale to Other Warehouses:
+Current: 1 warehouse (Hannover)  
+Potential: 3 warehouses (Hannover, Munich, Hamburg)
 
----
+Per-warehouse ROI: $20,580/year  
+3-warehouse ROI: $61,740/year
 
-12.6 Final Thoughts
+Implementation: 2 weeks per warehouse  
+Investment: ~$5,000 (setup + training)  
+Payback: 1 month per warehouse
+
+### 12.6 Final Thoughts
 
 This project demonstrates that machine learning can provide significant business value when properly implemented with a focus on:
 
-- Clear Use Case: Solving a specific, well-defined problem
-- User-Centric Design: Fitting into existing workflows
-- Robust Engineering: Production-ready implementation
-- Comprehensive Monitoring: Visibility into system performance
-- Measurable Impact: Clear ROI and business metrics
+Clear Use Case: Solving a specific, well-defined problem  
+User-Centric Design: Fitting into existing workflows  
+Robust Engineering: Production-ready implementation  
+Comprehensive Monitoring: Visibility into system performance  
+Measurable Impact: Clear ROI and business metrics
 
 The system successfully reduces manual work by 5 hours daily while improving accuracy and consistency. With 98.94% uptime and 97.8% success rate over 30 days, it has proven reliable for production use.
 
-**Key Success Metrics:**
+Key Success Metrics:
 - ✅ 91.78% accuracy (target: >85%)
 - ✅ 2.3s response time (target: <5s)
 - ✅ 98.94% uptime (target: >95%)
@@ -596,28 +618,29 @@ The project is ready for production use and has a clear path for future improvem
 
 ---
 
-13. References
+## 13. References
 
-#### 13.1 Documentation
+### 13.1 Documentation
 
 Project Documentation:
-1. [README.md] - Main project documentation
-2. [ARCHITECTURE.md] - System architecture
-3. [API Documentation] - API endpoints and examples
-4. [CLOUD_DEPLOYMENT.md] - Deployment guide
-5. [BATCH_SCHEDULING.md] - Batch processing automation
-6. [MONITORING.md] - Monitoring system
-7. [MONITORING_EXAMPLES.md] - Alert scenarios
-8. [TESTING.md] - Testing documentation
-9. [VISUALIZATION.md] - Visualization guide
-10. [USAGE_EXAMPLES.md] - Usage examples and workflows
-11. [QUICK_REFERENCE.md] - Quick command reference
-12. [CODE_STYLE.md](CODE_STYLE.md) - Code style guidelines
-13. [DATASETS.md](DATASETS.md) - Dataset documentation
-14. [DOCKER_INSTRUCTIONS.md](DOCKER_INSTRUCTIONS.md) - Docker setup
-15. [LICENSE](LICENSE) - MIT License
 
-#### 13.2 Code Repository
+1. [README.md] - Main project documentation  
+2. [ARCHITECTURE.md] - System architecture  
+3. [API Documentation] - API endpoints and examples  
+4. [CLOUD_DEPLOYMENT.md] - Deployment guide  
+5. [BATCH_SCHEDULING.md] - Batch processing automation  
+6. [MONITORING.md] - Monitoring system  
+7. [MONITORING_EXAMPLES.md] - Alert scenarios  
+8. [TESTING.md] - Testing documentation  
+9. [VISUALIZATION.md] - Visualization guide  
+10. [USAGE_EXAMPLES.md] - Usage examples and workflows  
+11. [QUICK_REFERENCE.md] - Quick command reference  
+12. [CODE_STYLE.md](CODE_STYLE.md) - Code style guidelines  
+13. [DATASETS.md](DATASETS.md) - Dataset documentation  
+14. [DOCKER_INSTRUCTIONS.md](DOCKER_INSTRUCTIONS.md) - Docker setup  
+15. [LICENSE](LICENSE) - MIT License  
+
+### 13.2 Code Repository
 
 **GitHub Repository:**  
 - URL: https://github.com/alexandraetnaer-max/image-classification-project  
@@ -640,12 +663,12 @@ image_classification_project/
 └── scripts/                # Utility scripts
 ```
 
-#### 13.3 Cloud Deployment
+### 13.3 Cloud Deployment
 
 **Production API:**  
-- URL: https://fashion-classifier-api-728466800559.europe-west1.run.app
-- Platform: Google Cloud Run
-- Region: europe-west1 (Belgium)
+- URL: https://fashion-classifier-api-728466800559.europe-west1.run.app  
+- Platform: Google Cloud Run  
+- Region: europe-west1 (Belgium)  
 - Status: Active
 
 **Available Endpoints:**
@@ -656,7 +679,7 @@ image_classification_project/
 - `/stats` - API statistics
 - `/version` - Model version
 
-#### 13.4 Dataset
+### 13.4 Dataset
 
 **Primary Dataset:**
 - **Name:** Fashion Product Images (Small)
@@ -677,133 +700,135 @@ image_classification_project/
 }
 ```
 
-#### 13.5 Technologies and Libraries
+### 13.5 Technologies and Libraries
 
 Core Technologies:
-- Python: 3.10
-- TensorFlow/Keras: 2.15.0
-- Flask: 3.0.0
-- Gunicorn: 21.2.0
 
-ML Libraries:
-- tensorflow==2.15.0
-- keras==2.15.0
-- numpy==1.24.3
-- pillow==10.0.0
-- scikit-learn==1.3.0
+Python: 3.10  
+TensorFlow/Keras: 2.15.0  
+Flask: 3.0.0  
+Gunicorn: 21.2.0  
 
-API Libraries:
-- flask==3.0.0
-- flask-cors==4.0.0
-- gunicorn==21.2.0
-- requests==2.31.0
+ML Libraries:  
+tensorflow==2.15.0  
+keras==2.15.0  
+numpy==1.24.3  
+pillow==10.0.0  
+scikit-learn==1.3.0  
 
-Data Processing:
-- pandas==2.1.0
-- matplotlib==3.7.2
-- seaborn==0.12.2
+API Libraries:  
+flask==3.0.0  
+flask-cors==4.0.0  
+gunicorn==21.2.0  
+requests==2.31.0  
 
-Monitoring:
-- sqlite3 (built-in)
-- smtplib (built-in)
+Data Processing:  
+pandas==2.1.0  
+matplotlib==3.7.2  
+seaborn==0.12.2  
 
-Testing:
-- pytest==7.4.0
-- unittest (built-in)
+Monitoring:  
+sqlite3 (built-in)  
+smtplib (built-in)  
 
-#### 13.6 Academic References
+Testing:  
+pytest==7.4.0  
+unittest (built-in)  
+
+### 13.6 Academic References
 
 Transfer Learning:
-- Howard, A. G., et al. (2017). "MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications." arXiv:1704.04861.
-- Sandler, M., et al. (2018). "MobileNetV2: Inverted Residuals and Linear Bottlenecks." CVPR 2018.
 
-Image Classification:
-- Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012). "ImageNet Classification with Deep Convolutional Neural Networks." NIPS 2012.
-- He, K., Zhang, X., Ren, S., & Sun, J. (2016). "Deep Residual Learning for Image Recognition." CVPR 2016.
+Howard, A. G., et al. (2017). "MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications." arXiv:1704.04861.  
+Sandler, M., et al. (2018). "MobileNetV2: Inverted Residuals and Linear Bottlenecks." CVPR 2018.
 
-Fashion Domain:
-- Liu, Z., et al. (2016). "DeepFashion: Powering Robust Clothes Recognition and Retrieval with Rich Annotations." CVPR 2016.
-- Zou, X., et al. (2019). "FashionAI: A Hierarchical Dataset for Fashion Understanding." arXiv:1908.07758.
+Image Classification:  
+Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012). "ImageNet Classification with Deep Convolutional Neural Networks." NIPS 2012.  
+He, K., Zhang, X., Ren, S., & Sun, J. (2016). "Deep Residual Learning for Image Recognition." CVPR 2016.
 
-#### 13.7 Online Resources
+Fashion Domain:  
+Liu, Z., et al. (2016). "DeepFashion: Powering Robust Clothes Recognition and Retrieval with Rich Annotations." CVPR 2016.  
+Zou, X., et al. (2019). "FashionAI: A Hierarchical Dataset for Fashion Understanding." arXiv:1908.07758.
 
-Documentation:
-- TensorFlow: https://www.tensorflow.org/
-- Keras: https://keras.io/
-- Flask: https://flask.palletsprojects.com/
-- Google Cloud Run: https://cloud.google.com/run/docs
+### 13.7 Online Resources
 
-Tutorials:
-- Transfer Learning Guide: https://www.tensorflow.org/tutorials/images/transfer_learning
-- Flask REST API: https://flask.palletsprojects.com/en/3.0.x/quickstart/
-- Cloud Run Deployment: https://cloud.google.com/run/docs/quickstarts/build-and-deploy
+Documentation:  
+TensorFlow: https://www.tensorflow.org/  
+Keras: https://keras.io/  
+Flask: https://flask.palletsprojects.com/  
+Google Cloud Run: https://cloud.google.com/run/docs
 
-Best Practices:
-- ML in Production: https://developers.google.com/machine-learning/guides/rules-of-ml
-- API Design: https://restfulapi.net/
-- Testing Best Practices: https://docs.pytest.org/en/stable/
+Tutorials:  
+Transfer Learning Guide: https://www.tensorflow.org/tutorials/images/transfer_learning  
+Flask REST API: https://flask.palletsprojects.com/en/3.0.x/quickstart/  
+Cloud Run Deployment: https://cloud.google.com/run/docs/quickstarts/build-and-deploy
 
-#### 13.8 Tools and Platforms
+Best Practices:  
+ML in Production: https://developers.google.com/machine-learning/guides/rules-of-ml  
+API Design: https://restfulapi.net/  
+Testing Best Practices: https://docs.pytest.org/en/stable/
 
-Development Tools:
-- IDE: Visual Studio Code
-- Version Control: Git + GitHub
-- Container: Docker
-- CI/CD: GitHub Actions
+### 13.8 Tools and Platforms
 
-Cloud Services:
-- Compute: Google Cloud Run
-- Storage: Google Cloud Storage
-- Logging: Google Cloud Logging
+Development Tools:  
+IDE: Visual Studio Code  
+Version Control: Git + GitHub  
+Container: Docker  
+CI/CD: GitHub Actions
 
-Monitoring Tools:
-- Dashboard: Custom Python (Plotly/Dash)
-- Alerts: Email (SMTP) + Slack (Webhooks)
-- Database: SQLite
+Cloud Services:  
+Compute: Google Cloud Run  
+Storage: Google Cloud Storage  
+Logging: Google Cloud Logging
 
-#### 13.9 Contact and Support
+Monitoring Tools:  
+Dashboard: Custom Python (Plotly/Dash)  
+Alerts: Email (SMTP) + Slack (Webhooks)  
+Database: SQLite
 
-Project Author:
-- Name: Alexandra Etnaer
-- Email: alexandra.etnaer@example.com (replace with actual)
-- GitHub: @alexandraetnaer-max
-- LinkedIn: linkedin.com/in/alexandraetnaer (if applicable)
+### 13.9 Contact and Support
 
-Academic Supervisor:
-- Name: Frank Passing
-- Institution: IU Internationale Hochschule GmbH
-- Course: Project: From Model to Production Environment
+Project Author:  
+Name: Alexandra Etnaer  
+Email: alexandra.etnaer@example.com (replace with actual)  
+GitHub: @alexandraetnaer-max  
+LinkedIn: linkedin.com/in/alexandraetnaer (if applicable)
 
-Support Resources:
-- GitHub Issues: https://github.com/alexandraetnaer-max/image-classification-project/issues
-- Documentation: See repository README.md
-- API Status: Check /health endpoint
+Academic Supervisor:  
+Name: Frank Passing  
+Institution: IU Internationale Hochschule GmbH  
+Course: Project: From Model to Production Environment
 
-#### 13.10 License and Attribution
+Support Resources:  
+GitHub Issues: https://github.com/alexandraetnaer-max/image-classification-project/issues  
+Documentation: See repository README.md  
+API Status: Check /health endpoint
 
-Project License:
-- License: MIT License
-- File: LICENSE
-- Year: 2025
-- Copyright: Alexandra Etnaer
+### 13.10 License and Attribution
 
-Dataset License:
-- Dataset: Fashion Product Images (Small)
-- License: CC0: Public Domain
-- Attribution: Param Aggarwal (Kaggle)
-- No attribution required but recommended
+Project License:  
+License: MIT License  
+File: LICENSE  
+Year: 2025  
+Copyright: Alexandra Etnaer
 
-Third-Party Licenses:
-- MobileNetV2: Apache 2.0 License (Google)
-- TensorFlow: Apache 2.0 License
-- Flask: BSD-3-Clause License
-- Other dependencies: See requirements.txt
+Dataset License:  
+Dataset: Fashion Product Images (Small)  
+License: CC0: Public Domain  
+Attribution: Param Aggarwal (Kaggle)  
+No attribution required but recommended
 
-Acknowledgments:
-- Kaggle community for dataset
-- Google for MobileNetV2 architecture
-- IU Internationale Hochschule for academic support
-- Open source community for libraries and tools
+Third-Party Licenses:  
+MobileNetV2: Apache 2.0 License (Google)  
+TensorFlow: Apache 2.0 License  
+Flask: BSD-3-Clause License  
+Other dependencies: See requirements.txt
+
+Acknowledgments:  
+Kaggle community for dataset  
+Google for MobileNetV2 architecture  
+IU Internationale Hochschule for academic support  
+Open source community for libraries and tools
 
 ---
 
@@ -811,8 +836,7 @@ Acknowledgments:
 
 ### Appendix A: Installation Guide
 
-See README.md for detailed installation instructions.
-
+See README.md for detailed installation instructions.  
 Quick Start:
 ```bash
 git clone https://github.com/alexandraetnaer-max/image-classification-project.git
@@ -900,10 +924,10 @@ Monthly Costs:
 - Maintenance:          $100 (2 hours @ $50/hr)
 - TOTAL:                $135/month
 
-Annual Cost:            $1,620
-Annual Savings:         $20,580
-Net Benefit:            $18,960
-ROI:                    1,170%
+Annual Cost:          $1,620  
+Annual Savings:       $20,580  
+Net Benefit:          $18,960  
+ROI:                  1,170%
 
 ### Appendix H: System Requirements
 
@@ -947,6 +971,7 @@ Business Terms:
 ### Appendix J: Change Log
 
 Version 1.0.0 (October 2025):
+
 - Initial production release
 - 91.78% validation accuracy
 - Cloud deployment on Google Cloud Run
@@ -977,7 +1002,5 @@ Figures: 30+ diagrams and visualizations
 Tables: 40+ data tables  
 Code Examples: 50+ code snippets  
 Document Status: Final Submission
-
----
 
 **END OF REPORT**
