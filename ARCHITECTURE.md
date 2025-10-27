@@ -2,7 +2,7 @@
 
 ## Architecture Diagram
 
-![System Architecture](../docs/architecture_diagram.png)
+![System Architecture](docs/architecture_diagram.png)
 
 ---
 
