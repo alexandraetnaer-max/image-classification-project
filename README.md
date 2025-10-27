@@ -203,7 +203,7 @@ python -m unittest tests.test_api.TestFlaskAPI.test_health_endpoint
 - Batch Processing: File detection, result validation, summary generation
 - Utilities: Image formats, configuration, data validation
 
-See TESTING.md for detailed testing guide.
+See [TESTING.md](TESTING.md) for detailed testing guide.
 
 ---
 
@@ -237,7 +237,7 @@ Body: file=@image.jpg
 # Statistics
 GET /stats
 ```
-See api/README.md for complete API documentation.
+See [api/README.md](api/README.md) for complete API documentation.
 
 ---
 
@@ -260,7 +260,7 @@ python src/batch_processor.py
 # Add to crontab for daily 2 AM execution
 0 2 * * * /path/to/run_batch_processing.sh
 ```
-See BATCH_SCHEDULING.md for automation guide.
+See [BATCH_SCHEDULING.md](BATCH_SCHEDULING.md) for automation guide.
 
 ---
 
@@ -286,7 +286,7 @@ python src/generate_batch_report.py
 python src/generate_batch_report.py --days 30
 ```
 Output: results/reports/ (HTML + charts)
-See VISUALIZATION.md for visualization guide.
+See [VISUALIZATION.md](VISUALIZATION.md) for visualization guide.
 
 ---
 
@@ -307,7 +307,7 @@ Output: monitoring/reports/
 ```bash
 python monitoring/check_batch_health.py
 ```
-See MONITORING.md for monitoring guide.
+See [MONITORING.md](MONITORING.md) for monitoring guide.
 
 ---
 
@@ -331,7 +331,7 @@ gcloud run deploy fashion-classifier-api \
   --memory 2Gi \
   --timeout 300
 ```
-See CLOUD_DEPLOYMENT.md for deployment guide.
+See [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md) for deployment guide.
 
 ---
 
